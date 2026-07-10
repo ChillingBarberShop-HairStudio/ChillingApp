@@ -1,8 +1,10 @@
 -- Chilling Barber Shop operational system. Run in the Supabase SQL Editor
 -- or through the Supabase CLI before connecting either web application.
 
-create extension if not exists pgcrypto;
-create extension if not exists citext;
+create schema if not exists extensions;
+revoke all on schema extensions from public;
+create extension if not exists pgcrypto with schema extensions;
+create extension if not exists citext with schema extensions;
 
 do $$ begin
   create type public.app_role as enum ('owner', 'manager', 'cashier', 'barber', 'skinner');
@@ -31,6 +33,7 @@ create or replace function public.next_booking_code()
 returns text
 language sql
 volatile
+set search_path = pg_catalog, public
 as $$
   select 'CHL-' || to_char(current_date, 'YYMMDD') || '-' || lpad(nextval('public.booking_number_seq')::text, 5, '0')
 $$;
@@ -39,13 +42,14 @@ create or replace function public.next_invoice_no()
 returns text
 language sql
 volatile
+set search_path = pg_catalog, public
 as $$
   select 'INV-' || to_char(current_date, 'YYMMDD') || '-' || lpad(nextval('public.invoice_number_seq')::text, 5, '0')
 $$;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  email citext unique,
+  email extensions.citext unique,
   display_name text not null default '',
   role public.app_role not null default 'barber',
   avatar_url text,
@@ -273,6 +277,7 @@ create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
 security invoker
+set search_path = pg_catalog
 as $$ begin new.updated_at = now(); return new; end $$;
 
 do $$
@@ -748,18 +753,18 @@ begin
   end if;
 end $$;
 
-revoke all on function public.create_public_booking(jsonb) from public;
-revoke all on function public.public_booking_catalog() from public;
-revoke all on function public.checkout_invoice(jsonb) from public;
-revoke all on function public.dashboard_metrics(date) from public;
-revoke all on function public.record_inventory_movement(uuid, public.inventory_movement_type, numeric, numeric, text) from public;
-revoke all on function public.handle_new_user() from public;
-revoke all on function public.current_profile_role() from public;
-revoke all on function public.is_active_staff() from public;
-revoke all on function public.can_operate() from public;
-revoke all on function public.can_manage() from public;
-revoke all on function public.can_access_booking(uuid) from public;
-revoke all on function public.purge_expired_operational_history() from public;
+revoke all on function public.create_public_booking(jsonb) from public, anon;
+revoke all on function public.public_booking_catalog() from public, anon;
+revoke all on function public.checkout_invoice(jsonb) from public, anon;
+revoke all on function public.dashboard_metrics(date) from public, anon;
+revoke all on function public.record_inventory_movement(uuid, public.inventory_movement_type, numeric, numeric, text) from public, anon;
+revoke all on function public.handle_new_user() from public, anon;
+revoke all on function public.current_profile_role() from public, anon;
+revoke all on function public.is_active_staff() from public, anon;
+revoke all on function public.can_operate() from public, anon;
+revoke all on function public.can_manage() from public, anon;
+revoke all on function public.can_access_booking(uuid) from public, anon;
+revoke all on function public.purge_expired_operational_history() from public, anon;
 grant execute on function public.create_public_booking(jsonb) to anon, authenticated;
 grant execute on function public.public_booking_catalog() to anon, authenticated;
 grant execute on function public.checkout_invoice(jsonb), public.dashboard_metrics(date), public.record_inventory_movement(uuid, public.inventory_movement_type, numeric, numeric, text) to authenticated;
