@@ -542,6 +542,24 @@ begin
     select id, display_name into v_staff from public.staff_profiles
     where display_name = (v_line ->> 'staffName') and is_active limit 1;
     if not found then raise exception 'Nhân viên không hợp lệ hoặc đã ngừng hoạt động'; end if;
+    if not exists (
+      select 1 from public.service_staff
+      where service_id = v_service.id and staff_id = v_staff.id
+    ) then
+      raise exception 'Nhân viên không thực hiện dịch vụ đã chọn';
+    end if;
+    if exists (
+      select 1
+      from public.bookings booking
+      join public.booking_services booking_service on booking_service.booking_id = booking.id
+      where booking.appointment_date = v_date
+        and booking.time_slot = v_slot
+        and booking.id <> v_booking_id
+        and booking.status in ('waiting', 'serving')
+        and booking_service.staff_id = v_staff.id
+    ) then
+      raise exception 'Nhân viên đã có lịch trong khung giờ này';
+    end if;
     v_quantity := greatest(1, least(10, coalesce(nullif(v_line ->> 'quantity', '')::integer, 1)));
     insert into public.booking_services (booking_id, service_id, service_name, staff_id, staff_name, unit_price, duration_minutes, quantity)
     values (v_booking_id, v_service.id, v_service.name, v_staff.id, v_staff.display_name, v_service.price, v_service.duration_minutes, v_quantity);
@@ -585,6 +603,24 @@ begin
   on conflict (phone) do update set full_name = excluded.full_name
   returning id into v_customer_id;
 
+  if v_booking_id is not null and not exists (
+    select 1 from public.bookings
+    where id = v_booking_id
+      and customer_id = v_customer_id
+      and status in ('waiting', 'serving')
+  ) then
+    raise exception 'Đơn đặt lịch không hợp lệ hoặc đã được thanh toán';
+  end if;
+
+  if v_method = 'bank_transfer' and (
+    v_bank_account_id is null or not exists (
+      select 1 from public.bank_accounts where id = v_bank_account_id and is_active
+    )
+  ) then
+    raise exception 'Vui lòng chọn tài khoản ngân hàng đang hoạt động';
+  end if;
+  if v_method = 'cash' then v_bank_account_id := null; end if;
+
   for v_line in select value from jsonb_array_elements(p_payload -> 'lines')
   loop
     select id, name, price, duration_minutes into v_service from public.services
@@ -593,6 +629,12 @@ begin
     select id, display_name into v_staff from public.staff_profiles
     where id = (v_line ->> 'staffId')::uuid and is_active limit 1;
     if not found then raise exception 'Nhân viên không hợp lệ'; end if;
+    if not exists (
+      select 1 from public.service_staff
+      where service_id = v_service.id and staff_id = v_staff.id
+    ) then
+      raise exception 'Nhân viên không thực hiện dịch vụ đã chọn';
+    end if;
     v_quantity := greatest(1, least(10, coalesce(nullif(v_line ->> 'quantity', '')::integer, 1)));
     v_subtotal := v_subtotal + (v_service.price * v_quantity);
   end loop;
@@ -626,7 +668,7 @@ set search_path = public
 as $$
 declare result jsonb;
 begin
-  if not public.is_active_staff() then raise exception 'Không có quyền xem dashboard'; end if;
+  if not public.can_operate() then raise exception 'Không có quyền xem dashboard'; end if;
   select jsonb_build_object(
     'date', p_date,
     'revenue', coalesce((select sum(total_amount) from public.invoices where status = 'paid' and paid_at::date = p_date), 0),
@@ -711,9 +753,17 @@ revoke all on function public.public_booking_catalog() from public;
 revoke all on function public.checkout_invoice(jsonb) from public;
 revoke all on function public.dashboard_metrics(date) from public;
 revoke all on function public.record_inventory_movement(uuid, public.inventory_movement_type, numeric, numeric, text) from public;
+revoke all on function public.handle_new_user() from public;
+revoke all on function public.current_profile_role() from public;
+revoke all on function public.is_active_staff() from public;
+revoke all on function public.can_operate() from public;
+revoke all on function public.can_manage() from public;
+revoke all on function public.can_access_booking(uuid) from public;
+revoke all on function public.purge_expired_operational_history() from public;
 grant execute on function public.create_public_booking(jsonb) to anon, authenticated;
 grant execute on function public.public_booking_catalog() to anon, authenticated;
 grant execute on function public.checkout_invoice(jsonb), public.dashboard_metrics(date), public.record_inventory_movement(uuid, public.inventory_movement_type, numeric, numeric, text) to authenticated;
+grant execute on function public.current_profile_role(), public.is_active_staff(), public.can_operate(), public.can_manage(), public.can_access_booking(uuid) to authenticated;
 
 -- Bootstrap the first owner after creating their Supabase Auth account:
 -- update public.profiles set role = 'owner', is_active = true where email = 'owner@example.com';
