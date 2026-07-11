@@ -36,7 +36,6 @@ From `workers/`:
 npx wrangler login
 npx wrangler secret put SUPABASE_URL
 npx wrangler secret put SUPABASE_ANON_KEY
-npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put GITHUB_TOKEN
 npx wrangler secret put GITHUB_OWNER
 npx wrangler secret put GITHUB_REPO
@@ -50,7 +49,7 @@ Set `ALLOWED_ORIGIN` to the exact Cloudflare Pages URL or custom admin domain, f
 https://admin.chillingbarber.vn
 ```
 
-The GitHub token must be fine-grained and limited to the `Chilling` repository with permission to dispatch a repository event. It is held only by the Worker.
+The GitHub token must be fine-grained, newly generated, and limited to the `Chilling` repository with permission to dispatch a repository event. It is held only by the Worker. The Worker verifies the caller's Supabase session and `owner`/`manager` role without storing a Supabase Service Role Key.
 
 ## 3. Land the database safely
 

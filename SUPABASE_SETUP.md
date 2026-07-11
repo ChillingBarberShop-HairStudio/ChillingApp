@@ -7,7 +7,7 @@
 5. In Supabase Dashboard, enable the `pg_cron` extension. Re-run the last scheduling block of the migration if it was executed before the extension was enabled.
 6. Create `chilling-management-system/.env` from `.env.example` and add only the project URL plus Anon Key.
 7. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as GitHub Actions repository secrets for the landing repository.
-8. Deploy `workers/` to Cloudflare. Configure `SUPABASE_SERVICE_ROLE_KEY` and `GITHUB_TOKEN` using `wrangler secret put`; never put either value in an `.env` file used by Vite.
+8. Deploy `workers/` to Cloudflare. Configure `GITHUB_TOKEN` using `wrangler secret put`; never put it in an `.env` file used by Vite.
 
 The worker's GitHub token requires only permission to dispatch the deployment event for the landing repository. Configure an allowlist/CORS origin before production if the management system has a fixed domain.
 
