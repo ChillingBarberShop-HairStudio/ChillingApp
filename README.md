@@ -28,9 +28,14 @@ where email = 'owner@your-domain.example';
 ## Security boundaries
 
 - Browser apps only use `VITE_SUPABASE_ANON_KEY`.
-- Service Role and GitHub deployment token belong only in Cloudflare Worker secrets.
+- The Cloudflare Worker authorizes the caller with their Supabase session; it does not need a Supabase service-role key.
+- A GitHub dispatch token, when used, belongs only in a Cloudflare Worker secret and must never be committed or placed in `VITE_*`.
 - Landing bookings call `create_public_booking(jsonb)`; anonymous users receive no direct table permissions.
 - The 90-day cleanup applies to operational logs only, not invoices, payments, bookings, or tax records.
+
+## Operations
+
+Read [OPERATIONS_GUIDE.md](OPERATIONS_GUIDE.md) for the online/offline checkout flow, stock handling, commission reconciliation, PDF invoices and secure landing content updates.
 
 ## Cloudflare Worker
 

@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Boxes, CalendarClock, ChartNoAxesCombined, FileText, LayoutDashboard, PackageSearch, ReceiptText, Settings2, ShoppingCart, UsersRound } from 'lucide-vue-next'
+import { BadgeDollarSign, Boxes, CalendarClock, ChartNoAxesCombined, FileText, LayoutDashboard, PackageSearch, ReceiptText, Settings2, ShoppingCart, UsersRound } from 'lucide-vue-next'
 
 export type NavigationItem = { label: string; to: string; icon: Component; note?: string }
 
@@ -13,6 +13,7 @@ export const NAVIGATION: NavigationItem[] = [
   { label: 'Hóa đơn', to: '/invoices', icon: ReceiptText },
   { label: 'Thuế & báo cáo', to: '/tax', icon: ChartNoAxesCombined },
   { label: 'Landing page', to: '/landing', icon: Settings2 },
+  { label: 'Chiết khấu chủ & thợ', to: '/commissions', icon: BadgeDollarSign },
 ]
 
 export const SECONDARY_NAVIGATION: NavigationItem[] = [

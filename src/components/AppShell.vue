@@ -40,6 +40,7 @@ async function logout() {
       <div class="sidebar-bottom">
         <a class="landing-link" :href="landingUrl" target="_blank" rel="noreferrer">Mở landing page</a>
         <button type="button" class="logout-button" @click="logout"><LogOut :size="18" /> Đăng xuất</button>
+        <p class="system-copyright">© 2026 Engineered by Vinh | All rights reserved</p>
       </div>
     </aside>
 

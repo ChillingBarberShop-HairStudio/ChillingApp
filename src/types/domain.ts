@@ -1,11 +1,12 @@
 export type AppRole = 'owner' | 'manager' | 'cashier' | 'barber' | 'skinner'
+export type ReportScope = 'day' | 'month' | 'all'
 export type BookingStatus = 'waiting' | 'serving' | 'completed' | 'cancelled'
 export type PaymentMethod = 'cash' | 'bank_transfer'
 
 export type Staff = {
   id: string
   display_name: string
-  position: AppRole
+  position: string
   avatar_url: string | null
   phone: string | null
   field_one_label: string | null
@@ -39,6 +40,17 @@ export type InventoryItem = {
   field_two_value: string | null
 }
 
+export type InventoryMovement = {
+  id: string
+  item_id: string
+  movement_type: 'in' | 'out'
+  quantity: number
+  unit_cost: number
+  note: string | null
+  created_at: string
+  inventory_items?: Pick<InventoryItem, 'item_code' | 'name' | 'unit'> | null
+}
+
 export type Customer = {
   id: string
   customer_code: string
@@ -57,7 +69,7 @@ export type Booking = {
   total_amount: number
   status: BookingStatus
   created_at: string
-  booking_services?: Array<{ service_name: string; staff_name: string | null }>
+  booking_services?: Array<{ service_id?: string | null; staff_id?: string | null; service_name: string; staff_name: string | null; quantity?: number }>
 }
 
 export type Invoice = {
@@ -76,17 +88,36 @@ export type Invoice = {
 
 export type DashboardMetrics = {
   date: string
+  scope: ReportScope
   revenue: number
   bookingCount: number
   invoiceCount: number
   expenses: number
   profit: number
+  staffCommission: number
+  ownerCommission: number
   cash: { count: number; amount: number }
   bankTransfer: { count: number; amount: number }
   monthlyRevenue: Array<{ month: string; revenue: number }>
   staffRank: Array<{ name: string; revenue: number }>
   customerRank: Array<{ name: string; visits: number }>
   serviceRank: Array<{ name: string; sold: number }>
+}
+
+export type CommissionRule = {
+  id: string
+  staff_id: string
+  commission_rate: number
+  effective_from: string
+}
+
+export type CommissionMetrics = {
+  date: string
+  scope: ReportScope
+  revenue: number
+  staffShare: number
+  ownerShare: number
+  items: Array<{ staffId: string | null; name: string; revenue: number; rate: number; staffShare: number; ownerShare: number }>
 }
 
 export type CheckoutLine = {
@@ -102,5 +133,21 @@ export type BankAccount = {
   account_number: string
   account_name: string
   branch_name: string | null
+  is_active: boolean
+}
+
+export type LandingContent = {
+  id: string
+  content_key: string
+  content_value: Record<string, unknown>
+  is_public: boolean
+}
+
+export type LandingMedia = {
+  id: string
+  section_key: 'hero' | 'studio' | 'services' | 'gallery'
+  storage_path: string
+  alt_text: string
+  sort_order: number
   is_active: boolean
 }
