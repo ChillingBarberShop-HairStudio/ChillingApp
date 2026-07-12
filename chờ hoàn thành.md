@@ -19,7 +19,7 @@
 - `npm run build` đã pass tại `chilling-management-system` và `../chilling_landing_codex_pack` ngày 2026-07-12.
 - `git diff --check` đã pass ở cả hai repo; chỉ có cảnh báo CRLF của Git trên Windows.
 - Supabase đã xác nhận: profile owner active, ảnh legacy `hero=1`, `studio=9`, `services=3`, `gallery=10`, cùng hai RPC Telegram cấu hình.
-- Security Advisor chỉ còn cảnh báo cấu hình Supabase Auth `Leaked Password Protection Disabled`. Cần bật thủ công trong Supabase Dashboard nếu chưa bật.
+- Security Advisor còn cảnh báo `Leaked Password Protection Disabled`. Đây là tính năng chỉ có từ Supabase Pro; theo quyết định prototype Free plan ngày 2026-07-12, không bật và không nâng gói.
 
 ## Đã triển khai
 
@@ -47,7 +47,8 @@
 - Đã sửa: dashboard hai biểu đồ, xu hướng thẳng hàng với cột, bảng mobile có cuộn ngang, chuông có danh sách booking, đăng nhập bỏ slogan cũ.
 - Đã sửa: nhân viên/kho/thanh toán/hóa đơn theo checklist; `npm run build` (gồm typecheck) đã pass cho Chilling OS và landing page.
 - Đã hoàn tất dữ liệu: migration `20260712124109_dashboard_service_roles_and_telegram_delivery.sql` đã áp dụng. Telegram đã gửi thử thành công, Supabase `pg_net` nhận phản hồi HTTP 200; token và Chat ID không bị đọc ra hay ghi vào mã nguồn.
-- Còn mở: kiểm tra/bật `Leaked Password Protection` trong Supabase Auth Settings (chỉ có trên Pro trở lên), commit/push hai repo và deploy lại hai website để phát hành các thay đổi của phiên này.
+- Hoàn tất phát hành: Chilling OS commit `7f2f42e` đã push và Cloudflare Pages deploy thành công; landing commit `aee6c91` đã push. Cả hai URL production đều trả HTTP 200.
+- Không còn hạng mục kỹ thuật bắt buộc cho prototype Free plan. Nếu sau này nâng Pro, cân nhắc bật `Leaked Password Protection` trong Supabase Auth Settings.
 
 ## Lưu ý bảo mật
 
