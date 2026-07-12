@@ -21,11 +21,16 @@
 - Supabase đã xác nhận: profile owner active, ảnh legacy `hero=1`, `studio=9`, `services=3`, `gallery=10`, cùng hai RPC Telegram cấu hình.
 - Security Advisor chỉ còn cảnh báo cấu hình Supabase Auth `Leaked Password Protection Disabled`. Cần bật thủ công trong Supabase Dashboard nếu chưa bật.
 
-## Cần triển khai
+## Đã triển khai
 
-1. Deploy admin: `npx wrangler pages deploy dist --project-name chillingapp-admin --branch main`.
-2. Commit/push ChillingApp và Chilling; kiểm tra HTTP production của admin Pages và GitHub Pages.
-3. Sau deploy, đăng xuất/đăng nhập lại Chilling OS để session mới nhận quyền owner.
+- ChillingApp commit `1183833` đã push lên `main` và deploy Cloudflare Pages thành công: `https://chillingapp-admin.pages.dev` trả HTTP 200.
+- Chilling commit `6c9b3d9` đã push lên `main`; GitHub Pages workflow `29182120202` kết thúc `success`. `https://chillingbarbershop-hairstudio.github.io/Chilling/` trả HTTP 200 với bundle mới.
+
+## Việc vận hành tiếp theo
+
+1. Đăng xuất/đăng nhập lại Chilling OS để session mới nhận quyền owner.
+2. Owner nhập Bot token và Chat ID tại menu Telegram Bot; token sẽ chỉ được giữ trong Supabase Vault.
+3. Khi đã xác nhận cho phép gửi dữ liệu booking sang Telegram, quay lại file này để tiếp tục mục Telegram đang chờ xác nhận bảo mật.
 
 ## Lưu ý bảo mật
 
