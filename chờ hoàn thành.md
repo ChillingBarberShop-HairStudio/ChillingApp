@@ -61,7 +61,7 @@
 - Đã tìm và sửa policy RLS khiến anon không thể đọc `landing_content` và `landing_media`; xác nhận anon hiện đọc được 5 nhóm nội dung và 23 ảnh. Landing phải tải lại trang để nhận dữ liệu Supabase mới.
 - Đã sửa Telegram live booking dùng UTF-8 byte-safe, tránh lỗi `ðŸ...`; quyền `authenticated` đã có lại cho `test_telegram_notification`.
 - Đã thêm cập nhật chuông Realtime có polling 30 giây dự phòng, bỏ hai menu phụ và nhãn `Mới`, thêm animation nhẹ cùng nhãn giá trị trên cột chart.
-- Migration mới: `20260712145139_fix_public_landing_and_telegram_encoding.sql`. Cần build, commit, push và deploy Chilling OS sau khi kiểm tra cuối.
+- Migration mới: `20260712145139_fix_public_landing_and_telegram_encoding.sql` đã áp dụng. Chilling OS commit `3619ae8` đã push và Cloudflare Pages deploy thành công, HTTP 200.
 
 ## Lưu ý bảo mật
 
