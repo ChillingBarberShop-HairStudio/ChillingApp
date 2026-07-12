@@ -50,6 +50,12 @@
 - Hoàn tất phát hành: Chilling OS commit `7f2f42e` đã push và Cloudflare Pages deploy thành công; landing commit `aee6c91` đã push. Cả hai URL production đều trả HTTP 200.
 - Không còn hạng mục kỹ thuật bắt buộc cho prototype Free plan. Nếu sau này nâng Pro, cân nhắc bật `Leaked Password Protection` trong Supabase Auth Settings.
 
+## Cập nhật 2026-07-12: Việt hóa và Telegram
+
+- Đã chuẩn hóa tiếng Việt có dấu tại các luồng vận hành vừa bổ sung: landing page, thanh toán, kho và hóa đơn.
+- Mẫu Telegram mới dùng tiêu đề nổi bật, icon, nhãn dữ liệu và xuống dòng từng mục. Migration `20260712134918_format_telegram_booking_notification.sql` đã áp dụng; gửi thử nhận HTTP 200.
+- Nút `Yêu cầu deploy` giữ nguyên theo giao diện, nhưng thông báo xác nhận rõ landing đã đồng bộ trực tiếp từ Supabase, không báo lỗi Worker gây hiểu nhầm.
+
 ## Lưu ý bảo mật
 
 - Không đưa Bot Token Telegram, service role key hoặc GitHub token vào `VITE_*`, source hay file commit.

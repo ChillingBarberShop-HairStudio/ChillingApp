@@ -36,7 +36,7 @@ const subtotal = computed(() => resolvedLines.value.reduce((sum, line) => sum + 
 const discountAmount = computed(() => Math.round(subtotal.value * Math.max(0, Math.min(100, discountPercent.value)) / 100))
 const total = computed(() => subtotal.value - discountAmount.value)
 const transferNote = computed(() => {
-  const serviceNames = resolvedLines.value.map((line) => line.service.name).join(', ') || 'Thanh toan'
+  const serviceNames = resolvedLines.value.map((line) => line.service.name).join(', ') || 'Thanh toán'
   const phone = customer.phone.replace(/\D/g, '') || 'KHACH'
   return `CHILLING ${phone} ${serviceNames}`.slice(0, 140)
 })
@@ -57,7 +57,7 @@ function syncLineStaff(line: CheckoutLine) {
 }
 
 function emptyService() {
-  Object.assign(serviceForm, { id: undefined, name: '', category: 'Cat toc', price: 0, duration_minutes: 30, provider_role: 'barber', is_active: true })
+  Object.assign(serviceForm, { id: undefined, name: '', category: 'Cắt tóc', price: 0, duration_minutes: 30, provider_role: 'barber', is_active: true })
 }
 
 function emptyBank() {
@@ -115,7 +115,7 @@ function removeLine(index: number) {
 async function pay() {
   error.value = ''
   success.value = ''
-  if (!isSupabaseConfigured) { error.value = 'Chua co cau hinh Supabase.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   try {
     const result = await checkout({
       bookingId: bookingId.value || null,
@@ -126,14 +126,14 @@ async function pay() {
       discountPercent: discountPercent.value,
       lines: lines.value,
     })
-    success.value = `Da tao hoa don ${String(result.invoiceNo)} - ${money(Number(result.totalAmount))}`
+    success.value = `Đã tạo hóa đơn ${String(result.invoiceNo)} - ${money(Number(result.totalAmount))}`
     customer.fullName = ''
     customer.phone = ''
     discountPercent.value = 0
     bookingId.value = ''
     await router.replace({ path: '/checkout' })
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Thanh toan khong thanh cong.'
+    error.value = cause instanceof Error ? cause.message : 'Thanh toán không thành công.'
   }
 }
 
@@ -145,9 +145,9 @@ async function saveServiceEntry() {
     if (index >= 0) services.value[index] = saved
     else services.value.push(saved)
     showModal.value = null
-    success.value = serviceForm.id ? 'Da cap nhat dich vu va gia ban.' : 'Da them dich vu moi.'
+    success.value = serviceForm.id ? 'Đã cập nhật dịch vụ và giá bán.' : 'Đã thêm dịch vụ mới.'
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the luu dich vu.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể lưu dịch vụ.'
   }
 }
 
@@ -155,7 +155,7 @@ async function saveBankEntry() {
   error.value = ''
   try {
     if (bankForm.id) {
-      if (!bankPassword.value) throw new Error('Nhap mat khau dang nhap de xac nhan sua tai khoan ngan hang.')
+      if (!bankPassword.value) throw new Error('Nhập mật khẩu đăng nhập để xác nhận sửa tài khoản ngân hàng.')
       await verifyCurrentPassword(bankPassword.value)
     }
     const saved = await saveBankAccount(bankForm)
@@ -164,9 +164,9 @@ async function saveBankEntry() {
     else accounts.value.push(saved)
     bankAccountId.value = saved.id
     showModal.value = null
-    success.value = bankForm.id ? 'Da xac thuc va cap nhat tai khoan ngan hang.' : 'Da them tai khoan ngan hang.'
+    success.value = bankForm.id ? 'Đã xác thực và cập nhật tài khoản ngân hàng.' : 'Đã thêm tài khoản ngân hàng.'
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the luu tai khoan ngan hang.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể lưu tài khoản ngân hàng.'
   }
 }
 
@@ -178,15 +178,15 @@ watch(() => route.query.booking, async (value) => {
 
 <template>
   <div class="page-intro compact">
-    <div><p class="eyebrow">Quay thanh toan</p><h2>Chot hoa don, cap nhat toan he thong</h2><p>{{ bookingId ? 'Don online da duoc dien san theo lich dat, co the kiem tra truoc khi thu tien.' : 'Thanh toan online va offline dung cung mot luong, tu dong dong bo doanh thu, khach hang va KPI nhan vien.' }}</p></div>
-    <div class="intro-actions"><button class="secondary-button" @click="openServiceForm()"><CirclePlus :size="17" /> Dich vu moi</button><button class="secondary-button" @click="showModal = 'services'"><ListChecks :size="17" /> Quan ly dich vu</button><button class="secondary-button" @click="showModal = 'banks'"><Landmark :size="17" /> Tai khoan ngan hang</button></div>
+    <div><p class="eyebrow">Quầy thanh toán</p><h2>Chốt hóa đơn, cập nhật toàn hệ thống</h2><p>{{ bookingId ? 'Đơn online đã được điền sẵn theo lịch đặt, có thể kiểm tra trước khi thu tiền.' : 'Thanh toán online và offline dùng cùng một luồng, tự động đồng bộ doanh thu, khách hàng và KPI nhân viên.' }}</p></div>
+    <div class="intro-actions"><button class="secondary-button" @click="openServiceForm()"><CirclePlus :size="17" /> Dịch vụ mới</button><button class="secondary-button" @click="showModal = 'services'"><ListChecks :size="17" /> Quản lý dịch vụ</button><button class="secondary-button" @click="showModal = 'banks'"><Landmark :size="17" /> Tài khoản ngân hàng</button></div>
   </div>
   <p v-if="error" class="error-banner">{{ error }}</p><p v-if="success" class="success-banner">{{ success }}</p>
   <div class="checkout-layout">
     <section class="panel checkout-form">
-      <div class="checkout-section"><h3>Khach hang</h3><div class="form-grid two"><label><span>Ho va ten *</span><input v-model="customer.fullName" placeholder="Ten khach hang" /></label><label><span>So dien thoai *</span><input v-model="customer.phone" inputmode="tel" placeholder="03x xxx xxxx" /></label></div></div>
-      <div class="checkout-section"><div class="line-heading"><h3>Dich vu</h3><button class="text-button" @click="addLine"><Plus :size="17" /> Them dich vu</button></div><div v-for="(line, index) in lines" :key="index" class="checkout-line"><select v-model="line.serviceId" @change="syncLineStaff(line)"><option v-for="service in services" :key="service.id" :value="service.id">{{ service.name }} - {{ money(service.price) }}</option></select><select v-model="line.staffId"><option v-for="person in staffForService(line.serviceId)" :key="person.id" :value="person.id">{{ person.display_name }} - {{ person.position }}</option></select><div class="quantity-control"><button @click="line.quantity = Math.max(1, line.quantity - 1)"><Minus :size="16" /></button><span>{{ line.quantity }}</span><button @click="line.quantity += 1"><Plus :size="16" /></button></div><button class="line-remove" :disabled="lines.length === 1" @click="removeLine(index)"><X :size="17" /></button></div></div>
-      <div class="checkout-section"><h3>Thanh toan</h3><div class="payment-methods"><button :class="{ active: paymentMethod === 'cash' }" @click="paymentMethod = 'cash'"><Banknote :size="19" /> Tien mat</button><button :class="{ active: paymentMethod === 'bank_transfer' }" @click="paymentMethod = 'bank_transfer'"><CreditCard :size="19" /> Chuyen khoan</button></div><div class="form-grid two"><label><span>Giam gia (%)</span><input v-model.number="discountPercent" type="number" min="0" max="100" /></label><label v-if="paymentMethod === 'bank_transfer'"><span>Tai khoan nhan</span><select v-model="bankAccountId"><option v-for="account in accounts" :key="account.id" :value="account.id">{{ account.bank_name }} - {{ account.account_number }}</option></select></label></div></div>
+      <div class="checkout-section"><h3>Khách hàng</h3><div class="form-grid two"><label><span>Họ và tên *</span><input v-model="customer.fullName" placeholder="Tên khách hàng" /></label><label><span>Số điện thoại *</span><input v-model="customer.phone" inputmode="tel" placeholder="03x xxx xxxx" /></label></div></div>
+      <div class="checkout-section"><div class="line-heading"><h3>Dịch vụ</h3><button class="text-button" @click="addLine"><Plus :size="17" /> Thêm dịch vụ</button></div><div v-for="(line, index) in lines" :key="index" class="checkout-line"><select v-model="line.serviceId" @change="syncLineStaff(line)"><option v-for="service in services" :key="service.id" :value="service.id">{{ service.name }} - {{ money(service.price) }}</option></select><select v-model="line.staffId"><option v-for="person in staffForService(line.serviceId)" :key="person.id" :value="person.id">{{ person.display_name }} - {{ person.position }}</option></select><div class="quantity-control"><button @click="line.quantity = Math.max(1, line.quantity - 1)"><Minus :size="16" /></button><span>{{ line.quantity }}</span><button @click="line.quantity += 1"><Plus :size="16" /></button></div><button class="line-remove" :disabled="lines.length === 1" @click="removeLine(index)"><X :size="17" /></button></div></div>
+      <div class="checkout-section"><h3>Thanh toán</h3><div class="payment-methods"><button :class="{ active: paymentMethod === 'cash' }" @click="paymentMethod = 'cash'"><Banknote :size="19" /> Tiền mặt</button><button :class="{ active: paymentMethod === 'bank_transfer' }" @click="paymentMethod = 'bank_transfer'"><CreditCard :size="19" /> Chuyển khoản</button></div><div class="form-grid two"><label><span>Giảm giá (%)</span><input v-model.number="discountPercent" type="number" min="0" max="100" /></label><label v-if="paymentMethod === 'bank_transfer'"><span>Tài khoản nhận</span><select v-model="bankAccountId"><option v-for="account in accounts" :key="account.id" :value="account.id">{{ account.bank_name }} - {{ account.account_number }}</option></select></label></div></div>
     </section>
     <aside class="invoice-preview"><div class="invoice-brand"><img src="/logo.PNG" alt="" /><div><strong>Chilling Barber Shop</strong><span>Hoa don tam tinh</span></div></div><div class="invoice-lines"><div v-for="line in resolvedLines" :key="line.service.id + line.member.id" class="invoice-line"><div><strong>{{ line.service.name }}</strong><span>{{ line.member.display_name }} - {{ line.quantity }} x {{ money(line.service.price) }}</span></div><b>{{ money(line.service.price * line.quantity) }}</b></div></div><div class="invoice-totals"><div><span>Tam tinh</span><strong>{{ money(subtotal) }}</strong></div><div><span>Giam gia</span><strong>-{{ money(discountAmount) }}</strong></div><div class="invoice-total"><span>Tong thanh toan</span><strong>{{ money(total) }}</strong></div></div><div v-if="paymentMethod === 'bank_transfer'" class="qr-payment"><img v-if="qrUrl" :src="qrUrl" class="vietqr" alt="Ma VietQR thanh toan" /><p><span>Noi dung chuyen khoan</span><strong>{{ transferNote }}</strong></p><a v-if="qrUrl" :href="qrUrl" target="_blank" rel="noreferrer"><QrCode :size="16" /> Mo QR</a></div><button class="checkout-submit" @click="pay"><ReceiptText :size="19" /> Xac nhan thanh toan</button></aside>
   </div>

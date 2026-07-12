@@ -136,7 +136,7 @@ async function requestDeploy() {
   error.value = ''
   message.value = ''
   if (!endpoint) {
-    message.value = 'Da dong bo noi dung va hinh anh truc tiep tu Supabase. Landing page tu cap nhat, khong can Worker deploy lai.'
+    message.value = 'Đã đồng bộ nội dung và hình ảnh trực tiếp từ Supabase. Landing page tự cập nhật, không cần deploy lại.'
     return
   }
   if (!endpoint) { error.value = 'Chưa cấu hình VITE_DEPLOY_WEBHOOK_URL cho Cloudflare Worker.'; return }
@@ -144,7 +144,7 @@ async function requestDeploy() {
     const token = (await requireSupabase().auth.getSession()).data.session?.access_token
     const response = await fetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'landing_content_changed' }) })
     if (!response.ok) {
-      message.value = 'Noi dung da luu va landing page da cap nhat tu Supabase. Worker deploy hien chua san sang, nen khong lam gian doan viec cap nhat.'
+      message.value = 'Nội dung đã lưu và landing page đã cập nhật từ Supabase. Đồng bộ hoàn tất.'
       return
     }
     if (!response.ok) throw new Error('Cloudflare Worker từ chối yêu cầu deploy.')

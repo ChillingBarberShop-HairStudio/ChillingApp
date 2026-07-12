@@ -19,7 +19,7 @@ const exportForm = reactive({ itemId: '', quantity: 1, note: '' })
 const editForm = reactive<Partial<InventoryItem>>({})
 const totalStockValue = computed(() => items.value.reduce((total, item) => total + item.quantity * item.unit_cost, 0))
 const selectedImportItem = computed(() => items.value.find((item) => item.id === importExistingId.value) ?? null)
-const money = (value: number) => `${value.toLocaleString('vi-VN')}d`
+const money = (value: number) => `${value.toLocaleString('vi-VN')}đ`
 const today = () => new Date().toLocaleDateString('vi-VN')
 
 async function load() {
@@ -29,7 +29,7 @@ async function load() {
     items.value = inventory
     movements.value = history
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the tai du lieu kho.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể tải dữ liệu kho.'
   }
 }
 
@@ -66,13 +66,13 @@ async function submitEdit() {
     if (index >= 0) items.value[index] = saved
     showAction.value = null
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the cap nhat ton kho.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể cập nhật tồn kho.'
   }
 }
 
 async function submitImport() {
   error.value = ''
-  if (!isSupabaseConfigured) { error.value = 'Chua co cau hinh Supabase.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   if (importForm.quantity <= 0 || importForm.unitCost < 0) { error.value = 'So luong va don gia nhap kho khong hop le.'; return }
   try {
     let item = selectedImportItem.value
@@ -84,26 +84,26 @@ async function submitImport() {
         field_two_label: importForm.fieldTwoLabel.trim() || null, field_two_value: importForm.fieldTwoValue.trim() || null,
       })
     }
-    await recordInventoryMovement({ itemId: item.id, type: 'in', quantity: importForm.quantity, unitCost: importForm.unitCost, note: importForm.note.trim() || `Nhap kho ${today()}` })
+    await recordInventoryMovement({ itemId: item.id, type: 'in', quantity: importForm.quantity, unitCost: importForm.unitCost, note: importForm.note.trim() || `Nhập kho ${today()}` })
     showAction.value = null
     activePanel.value = 'stock'
     await load()
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the nhap kho.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể nhập kho.'
   }
 }
 
 async function submitExport() {
   error.value = ''
-  if (!isSupabaseConfigured) { error.value = 'Chua co cau hinh Supabase.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   if (!exportForm.itemId || exportForm.quantity <= 0) { error.value = 'Vui long chon san pham va so luong xuat.'; return }
   try {
-    await recordInventoryMovement({ itemId: exportForm.itemId, type: 'out', quantity: exportForm.quantity, note: exportForm.note.trim() || `Xuat kho ${today()}` })
+    await recordInventoryMovement({ itemId: exportForm.itemId, type: 'out', quantity: exportForm.quantity, note: exportForm.note.trim() || `Xuất kho ${today()}` })
     showAction.value = null
     activePanel.value = 'history'
     await load()
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Khong the xuat kho.'
+    error.value = cause instanceof Error ? cause.message : 'Không thể xuất kho.'
   }
 }
 
@@ -112,14 +112,14 @@ onMounted(load)
 
 <template>
   <div class="page-intro compact">
-    <div><p class="eyebrow">Van hanh kho</p><h2>Quan ly ton kho</h2><p>Lich su nhap, xuat duoc tu dong don sau 90 ngay; chi phi nhap kho duoc cong vao chi tieu thuc te.</p></div>
-    <div class="intro-actions"><button class="secondary-button" @click="openExport"><ArrowUpFromLine :size="17" /> Xuat kho</button><button class="primary-button" @click="openImport"><ArrowDownToLine :size="17" /> Nhap kho</button></div>
+    <div><p class="eyebrow">Vận hành kho</p><h2>Quản lý tồn kho</h2><p>Lịch sử nhập, xuất được tự động dọn sau 90 ngày; chi phí nhập kho được cộng vào chi tiêu thực tế.</p></div>
+    <div class="intro-actions"><button class="secondary-button" @click="openExport"><ArrowUpFromLine :size="17" /> Xuất kho</button><button class="primary-button" @click="openImport"><ArrowDownToLine :size="17" /> Nhập kho</button></div>
   </div>
   <p v-if="error" class="error-banner">{{ error }}</p>
-  <section class="inventory-stat-strip"><article><span>Tong mat hang</span><strong>{{ items.length }}</strong></article><article><span>Gia tri ton uoc tinh</span><strong>{{ money(totalStockValue) }}</strong></article><article><span>Lich su hien thi</span><strong>90 ngay gan nhat</strong></article></section>
+  <section class="inventory-stat-strip"><article><span>Tổng mặt hàng</span><strong>{{ items.length }}</strong></article><article><span>Giá trị tồn ước tính</span><strong>{{ money(totalStockValue) }}</strong></article><article><span>Lịch sử hiển thị</span><strong>90 ngày gần nhất</strong></article></section>
 
-  <div class="inventory-panel-tabs" role="tablist" aria-label="Du lieu kho"><button type="button" :class="{ active: activePanel === 'stock' }" @click="activePanel = 'stock'">Chi tiet ton kho</button><button type="button" :class="{ active: activePanel === 'history' }" @click="activePanel = 'history'">Lich su hoat dong</button></div>
-  <section v-if="activePanel === 'stock'" class="panel table-panel inventory-table"><div class="table-heading"><div><h3>Bang chi tiet ton kho</h3><p>Chon Sua ngay tren dong san pham de cap nhat thong tin; cac o trong bang chi dung de theo doi nhanh.</p></div><PackagePlus :size="22" /></div><table><thead><tr><th>Ma san pham</th><th>Ten san pham</th><th>Ton kho</th><th>Don vi</th><th>Don gia</th><th>Thong tin bo sung</th><th>Thao tac</th></tr></thead><tbody><tr v-for="item in items" :key="item.id"><td><code>{{ item.item_code }}</code></td><td><strong>{{ item.name }}</strong></td><td>{{ item.quantity }}</td><td>{{ item.unit }}</td><td>{{ money(item.unit_cost) }}</td><td><span>{{ item.field_one_label ? `${item.field_one_label}: ${item.field_one_value || '-'}` : '-' }}</span><span v-if="item.field_two_label">{{ item.field_two_label }}: {{ item.field_two_value || '-' }}</span></td><td><button class="inline-action" @click="openEdit(item)"><Pencil :size="16" /> Sua</button></td></tr><tr v-if="!items.length"><td colspan="7" class="empty-table">Chua co san pham trong kho.</td></tr></tbody></table></section>
+  <div class="inventory-panel-tabs" role="tablist" aria-label="Dữ liệu kho"><button type="button" :class="{ active: activePanel === 'stock' }" @click="activePanel = 'stock'">Chi tiết tồn kho</button><button type="button" :class="{ active: activePanel === 'history' }" @click="activePanel = 'history'">Lịch sử hoạt động</button></div>
+  <section v-if="activePanel === 'stock'" class="panel table-panel inventory-table"><div class="table-heading"><div><h3>Bảng chi tiết tồn kho</h3><p>Chọn Sửa ngay trên dòng sản phẩm để cập nhật thông tin; các ô trong bảng chỉ dùng để theo dõi nhanh.</p></div><PackagePlus :size="22" /></div><table><thead><tr><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th>Tồn kho</th><th>Đơn vị</th><th>Đơn giá</th><th>Thông tin bổ sung</th><th>Thao tác</th></tr></thead><tbody><tr v-for="item in items" :key="item.id"><td><code>{{ item.item_code }}</code></td><td><strong>{{ item.name }}</strong></td><td>{{ item.quantity }}</td><td>{{ item.unit }}</td><td>{{ money(item.unit_cost) }}</td><td><span>{{ item.field_one_label ? `${item.field_one_label}: ${item.field_one_value || '-'}` : '-' }}</span><span v-if="item.field_two_label">{{ item.field_two_label }}: {{ item.field_two_value || '-' }}</span></td><td><button class="inline-action" @click="openEdit(item)"><Pencil :size="16" /> Sửa</button></td></tr><tr v-if="!items.length"><td colspan="7" class="empty-table">Chưa có sản phẩm trong kho.</td></tr></tbody></table></section>
 
   <section v-else class="panel table-panel inventory-history"><div class="table-heading"><div><h3>Lich su hoat dong</h3><p>Tu dong xoa sau 90 ngay de du lieu van hanh luon gon nhe.</p></div><ClipboardList :size="22" /></div><table><thead><tr><th>Thoi gian</th><th>San pham</th><th>Loai</th><th>So luong</th><th>Don gia</th><th>Tong tien</th><th>Ghi chu</th></tr></thead><tbody><tr v-for="movement in movements" :key="movement.id"><td>{{ new Date(movement.created_at).toLocaleString('vi-VN') }}</td><td><strong>{{ movement.inventory_items?.name || 'San pham da xoa' }}</strong><span>{{ movement.inventory_items?.item_code }}</span></td><td><span class="movement-badge" :class="`movement-${movement.movement_type}`">{{ movement.movement_type === 'in' ? 'Nhap kho' : 'Xuat kho' }}</span></td><td>{{ movement.quantity }} {{ movement.inventory_items?.unit || '' }}</td><td>{{ movement.movement_type === 'in' ? money(movement.unit_cost) : '-' }}</td><td><strong>{{ movement.movement_type === 'in' ? money(movement.quantity * movement.unit_cost) : '-' }}</strong></td><td>{{ movement.note || '-' }}</td></tr><tr v-if="!movements.length"><td colspan="7" class="empty-table">Chua co lich su hoat dong.</td></tr></tbody></table></section>
 
