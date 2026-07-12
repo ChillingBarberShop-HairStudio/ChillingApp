@@ -133,10 +133,20 @@ async function removeImage(image: LandingMedia) {
 
 async function requestDeploy() {
   const endpoint = import.meta.env.VITE_DEPLOY_WEBHOOK_URL
+  error.value = ''
+  message.value = ''
+  if (!endpoint) {
+    message.value = 'Da dong bo noi dung va hinh anh truc tiep tu Supabase. Landing page tu cap nhat, khong can Worker deploy lai.'
+    return
+  }
   if (!endpoint) { error.value = 'Chưa cấu hình VITE_DEPLOY_WEBHOOK_URL cho Cloudflare Worker.'; return }
   try {
     const token = (await requireSupabase().auth.getSession()).data.session?.access_token
     const response = await fetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'landing_content_changed' }) })
+    if (!response.ok) {
+      message.value = 'Noi dung da luu va landing page da cap nhat tu Supabase. Worker deploy hien chua san sang, nen khong lam gian doan viec cap nhat.'
+      return
+    }
     if (!response.ok) throw new Error('Cloudflare Worker từ chối yêu cầu deploy.')
     message.value = 'Đã gửi yêu cầu deploy. Nội dung và ảnh đã cập nhật trực tiếp từ Supabase.'
   } catch (cause) {

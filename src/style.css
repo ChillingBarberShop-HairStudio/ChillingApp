@@ -78,3 +78,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 1180px) { .kpi-grid:has(.kpi-card:nth-child(5)) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 800px) { .report-filters { width: 100%; justify-content: stretch; }.scope-filter { flex: 1; }.inventory-stat-strip { grid-template-columns: 1fr; }.landing-copy-fields { grid-template-columns: 1fr; }.system-copyright { display: none; } }
 @media (max-width: 560px) { .kpi-grid:has(.kpi-card:nth-child(5)) { grid-template-columns: 1fr; }.report-filters, .scope-filter { width: 100%; }.custom-field-heading { align-items: start; flex-direction: column; gap: 4px; }.staff-avatar-upload { align-items: start; flex-wrap: wrap; }.receipt-actions { grid-template-columns: 1fr; }.landing-editor { padding: 16px; }.revenue-panel { padding: 16px; }.bar-group strong { font-size: .58rem; }.landing-media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Responsive operational refinements. */
+.monthly-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.monthly-chart-grid .revenue-panel { margin-top: 0; }
+.monthly-trend-line polyline { stroke: var(--trend-color, #2f7bbf); }
+.notification-wrap { position: relative; }
+.notification-popover { position: absolute; z-index: 60; top: calc(100% + 10px); right: 0; width: min(360px, calc(100vw - 28px)); overflow: hidden; border: 1px solid #e1e4e7; border-radius: 13px; background: white; box-shadow: 0 18px 42px rgb(18 22 27 / .16); }
+.notification-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf0f2; padding: 13px 14px; color: #33373d; font-size: .79rem; }
+.notification-heading button { border: 0; background: transparent; color: #9a6e25; font-size: .71rem; font-weight: 800; }
+.notification-popover ul { display: grid; max-height: 290px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.notification-popover li { display: grid; gap: 4px; border-bottom: 1px solid #f0f1f2; padding: 12px 14px; }
+.notification-popover li:last-child { border-bottom: 0; }.notification-popover li strong { color: #34383e; font-size: .78rem; }.notification-popover li span, .notification-empty { color: #7d8289; font-size: .7rem; line-height: 1.45; }.notification-empty { margin: 0; padding: 14px; }
+.staff-card-actions { display: flex; gap: 6px; }.staff-card-bottom .staff-card-actions button { background: #f1f4f6; color: #525860; }.staff-card-bottom .staff-card-actions button:last-child { background: #fff1f2; color: #c23c45; }
+.inventory-panel-tabs { display: flex; gap: 8px; margin-bottom: 14px; }.inventory-panel-tabs button { min-height: 38px; border: 1px solid #dfe2e6; border-radius: 9px; background: white; padding: 0 13px; color: #636870; font-size: .76rem; font-weight: 800; }.inventory-panel-tabs button.active { border-color: #d4a84f; background: #fff7e5; color: #855d1e; }
+.manager-modal { display: grid; gap: 16px; }.manager-list { display: grid; max-height: min(55vh, 440px); overflow-y: auto; border-block: 1px solid #edf0f1; }.manager-list article { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf0f1; padding: 12px 0; }.manager-list article:last-child { border-bottom: 0; }.manager-list strong, .manager-list span { display: block; }.manager-list strong { color: #34383e; font-size: .8rem; }.manager-list span { margin-top: 4px; color: #7d8289; font-size: .7rem; }
+.table-panel { overflow-x: auto; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }.table-panel table { min-width: 720px; }
+.receipt-header img { display: block; margin: 0 auto; }.receipt-breakdown { display: grid; gap: 8px; margin-top: 16px; border-top: 1px dashed #d9dcdf; padding-top: 13px; }.receipt-breakdown div { display: flex; justify-content: space-between; gap: 12px; color: #5f656d; font-size: .74rem; }.receipt-breakdown strong { color: #34383e; }
+@media (max-width: 1240px) { .monthly-chart-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .notification-popover { position: fixed; top: 78px; right: 12px; left: 12px; width: auto; }.inventory-panel-tabs { overflow-x: auto; padding-bottom: 3px; }.inventory-panel-tabs button { flex: none; white-space: nowrap; }.table-panel table { min-width: 660px; }.monthly-revenue-chart { min-width: 580px; }.manager-list article { align-items: flex-start; flex-direction: column; }.manager-list .inline-action { width: 100%; } }

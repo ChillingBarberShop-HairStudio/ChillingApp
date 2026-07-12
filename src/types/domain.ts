@@ -24,6 +24,7 @@ export type Service = {
   category: string
   price: number
   duration_minutes: number
+  provider_role: 'barber' | 'skinner' | null
   is_active: boolean
 }
 
@@ -78,6 +79,7 @@ export type Invoice = {
   customer_name: string
   customer_phone: string
   subtotal: number
+  discount_percent: number
   discount_amount: number
   total_amount: number
   payment_method: PaymentMethod
@@ -99,6 +101,7 @@ export type DashboardMetrics = {
   cash: { count: number; amount: number }
   bankTransfer: { count: number; amount: number }
   monthlyRevenue: Array<{ month: string; revenue: number }>
+  monthlyExpenses: Array<{ month: string; revenue: number }>
   staffRank: Array<{ name: string; revenue: number }>
   customerRank: Array<{ name: string; visits: number }>
   serviceRank: Array<{ name: string; sold: number }>
@@ -125,6 +128,16 @@ export type TelegramConfigStatus = {
   chatId: string | null
   enabled: boolean
   updatedAt: string | null
+}
+
+export type AdminNotification = {
+  id: string
+  booking_code: string
+  customer_name: string
+  appointment_date: string
+  time_slot: string
+  status: BookingStatus
+  created_at: string
 }
 
 export type CheckoutLine = {

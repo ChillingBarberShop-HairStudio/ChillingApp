@@ -32,6 +32,23 @@
 2. Owner nhập Bot token và Chat ID tại menu Telegram Bot; token sẽ chỉ được giữ trong Supabase Vault.
 3. Khi đã xác nhận cho phép gửi dữ liệu booking sang Telegram, quay lại file này để tiếp tục mục Telegram đang chờ xác nhận bảo mật.
 
+## Phiên chỉnh sửa 2026-07-12 (đang thực hiện)
+
+1. Tối ưu mobile/PC: bảng dữ liệu cần có vùng cuộn ngang rõ ràng hoặc chuyển bố cục thẻ, không cắt dữ liệu ở mép phải.
+2. Dashboard: khôi phục nhãn cột, thêm biểu đồ thu/chi theo tháng và line trend màu riêng; bỏ toàn bộ cụm "Vận hành gọn. Tăng trưởng rõ."; kiểm tra chuông thông báo.
+3. Nhân viên/Kho: cho sửa hồ sơ nhân viên, đổi kho sang thao tác sửa theo dòng và bố cục hai khu vực rõ ràng.
+4. Thanh toán/Hóa đơn: sửa dịch vụ và tài khoản ngân hàng (yêu cầu xác thực mật khẩu), PDF không chứa nút thao tác, có ngày xuất, giảm giá và logo giữa hóa đơn.
+5. Landing/Booking: sửa webhook deploy Worker, role thực hiện dịch vụ (Barber/Skinner) và danh sách nhân viên theo dịch vụ.
+6. Telegram: Owner đã xác nhận cho phép gửi booking. Cần migration `pg_net`, gửi thử, kiểm tra phản hồi Telegram; token/Chat ID vẫn phải chỉnh sửa được.
+7. Auth: bật Leaked Password Protection nếu project đang ở gói Supabase hỗ trợ tính năng này.
+
+## Tiến độ phiên 2026-07-12
+
+- Đã sửa: dashboard hai biểu đồ, xu hướng thẳng hàng với cột, bảng mobile có cuộn ngang, chuông có danh sách booking, đăng nhập bỏ slogan cũ.
+- Đã sửa: nhân viên/kho/thanh toán/hóa đơn theo checklist; `npm run build` (gồm typecheck) đã pass cho Chilling OS và landing page.
+- Đã hoàn tất dữ liệu: migration `20260712124109_dashboard_service_roles_and_telegram_delivery.sql` đã áp dụng. Telegram đã gửi thử thành công, Supabase `pg_net` nhận phản hồi HTTP 200; token và Chat ID không bị đọc ra hay ghi vào mã nguồn.
+- Còn mở: kiểm tra/bật `Leaked Password Protection` trong Supabase Auth Settings (chỉ có trên Pro trở lên), commit/push hai repo và deploy lại hai website để phát hành các thay đổi của phiên này.
+
 ## Lưu ý bảo mật
 
 - Không đưa Bot Token Telegram, service role key hoặc GitHub token vào `VITE_*`, source hay file commit.

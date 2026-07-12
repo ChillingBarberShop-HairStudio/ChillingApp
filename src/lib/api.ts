@@ -1,5 +1,5 @@
 import { requireSupabase } from './supabase'
-import type { BankAccount, Booking, CommissionMetrics, CommissionRule, Customer, DashboardMetrics, InventoryItem, InventoryMovement, Invoice, LandingContent, LandingMedia, ReportScope, Service, Staff, TelegramConfigStatus } from '../types/domain'
+import type { AdminNotification, BankAccount, Booking, CommissionMetrics, CommissionRule, Customer, DashboardMetrics, InventoryItem, InventoryMovement, Invoice, LandingContent, LandingMedia, ReportScope, Service, Staff, TelegramConfigStatus } from '../types/domain'
 
 function unwrap<T>({ data, error }: { data: T | null; error: { message: string } | null }): T {
   if (error) throw new Error(error.message)
@@ -65,6 +65,14 @@ export async function saveBankAccount(account: Partial<BankAccount>): Promise<Ba
   return unwrap<BankAccount>({ data: data as BankAccount | null, error })
 }
 
+export async function verifyCurrentPassword(password: string): Promise<void> {
+  const client = requireSupabase()
+  const { data, error: userError } = await client.auth.getUser()
+  if (userError || !data.user?.email) throw new Error('Không xác định được tài khoản đang đăng nhập.')
+  const { error } = await client.auth.signInWithPassword({ email: data.user.email, password })
+  if (error) throw new Error('Mật khẩu xác thực không đúng.')
+}
+
 export async function getInventory(): Promise<InventoryItem[]> {
   const { data, error } = await requireSupabase().from('inventory_items').select('*').eq('is_active', true).order('name')
   return unwrap<InventoryItem[]>({ data: data as InventoryItem[] | null, error })
@@ -102,6 +110,11 @@ export async function getCustomers(): Promise<Customer[]> {
 export async function getOnlineBookings(): Promise<Booking[]> {
   const { data, error } = await requireSupabase().from('bookings').select('*, booking_services(service_id, staff_id, service_name, staff_name, quantity)').eq('source', 'landing_page').order('created_at', { ascending: false }).limit(100)
   return unwrap<Booking[]>({ data: data as Booking[] | null, error })
+}
+
+export async function getRecentNotifications(): Promise<AdminNotification[]> {
+  const { data, error } = await requireSupabase().from('bookings').select('id, booking_code, customer_name, appointment_date, time_slot, status, created_at').eq('source', 'landing_page').in('status', ['waiting', 'serving']).order('created_at', { ascending: false }).limit(6)
+  return unwrap<AdminNotification[]>({ data: data as AdminNotification[] | null, error })
 }
 
 export async function getBookingForCheckout(id: string): Promise<Booking> {
@@ -154,6 +167,11 @@ export async function saveTelegramConfig(payload: { botToken: string; chatId: st
     p_enabled: payload.enabled,
   })
   return unwrap<TelegramConfigStatus>({ data: data as TelegramConfigStatus | null, error })
+}
+
+export async function testTelegramNotification(): Promise<void> {
+  const { error } = await requireSupabase().rpc('test_telegram_notification')
+  if (error) throw new Error(error.message)
 }
 
 export async function getLandingContent() {
