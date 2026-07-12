@@ -1,45 +1,5 @@
 import { requireSupabase } from './supabase'
-import type { BankAccount, Booking, CommissionMetrics, CommissionRule, Customer, DashboardMetrics, InventoryItem, InventoryMovement, Invoice, LandingContent, LandingMedia, ReportScope, Service, Staff } from '../types/domain'
-
-export const DEMO_METRICS: DashboardMetrics = {
-  date: new Date().toISOString().slice(0, 10),
-  scope: 'day',
-  revenue: 4380000,
-  bookingCount: 18,
-  invoiceCount: 14,
-  expenses: 750000,
-  profit: 3630000,
-  staffCommission: 1815000,
-  ownerCommission: 1815000,
-  cash: { count: 9, amount: 2460000 },
-  bankTransfer: { count: 5, amount: 1920000 },
-  monthlyRevenue: [
-    { month: '02/2026', revenue: 21000000 }, { month: '03/2026', revenue: 25400000 },
-    { month: '04/2026', revenue: 22700000 }, { month: '05/2026', revenue: 29600000 },
-    { month: '06/2026', revenue: 31800000 }, { month: '07/2026', revenue: 26700000 },
-  ],
-  staffRank: [{ name: 'Nam', revenue: 11600000 }, { name: 'Thông', revenue: 9900000 }, { name: 'Boss Linh', revenue: 7500000 }, { name: 'Hương', revenue: 5300000 }, { name: 'Minh', revenue: 4200000 }],
-  customerRank: [{ name: 'Nguyễn Minh', visits: 12 }, { name: 'Trần Nam', visits: 9 }, { name: 'Lê Khánh', visits: 8 }, { name: 'Phạm Anh', visits: 7 }, { name: 'Hoàng Long', visits: 6 }],
-  serviceRank: [{ name: 'Thợ cắt', sold: 56 }, { name: 'Gội đầu', sold: 39 }, { name: 'Uốn tóc trending', sold: 22 }, { name: 'Massage mặt', sold: 18 }, { name: 'Nhuộm màu cơ bản', sold: 15 }],
-}
-
-export const DEMO_STAFF: Staff[] = [
-  { id: 'demo-boss', display_name: 'Boss Linh', position: 'owner', avatar_url: null, phone: '0327969930', field_one_label: 'Ngày vào làm', field_one_value: '01/01/2020', field_two_label: 'Quê quán', field_two_value: 'Bình Dương', field_three_label: 'Chuyên môn', field_three_value: 'Chủ quán', is_active: true },
-  { id: 'demo-huong', display_name: 'Hương', position: 'skinner', avatar_url: null, phone: '0900000001', field_one_label: 'Ngày vào làm', field_one_value: '03/06/2023', field_two_label: 'Quê quán', field_two_value: 'Bình Dương', field_three_label: 'Chuyên môn', field_three_value: 'Skinner', is_active: true },
-  { id: 'demo-nam', display_name: 'Nam', position: 'barber', avatar_url: null, phone: '0900000002', field_one_label: 'Ngày vào làm', field_one_value: '15/09/2022', field_two_label: 'Quê quán', field_two_value: 'TP.HCM', field_three_label: 'Chuyên môn', field_three_value: 'Barber', is_active: true },
-]
-
-export const DEMO_SERVICES: Service[] = [
-  { id: 'demo-cut', name: 'Thợ cắt (được quyền yêu cầu)', category: 'Cắt tóc', price: 70000, duration_minutes: 35, is_active: true },
-  { id: 'demo-owner', name: 'Chủ quán cắt', category: 'Cắt tóc', price: 100000, duration_minutes: 45, is_active: true },
-  { id: 'demo-perm', name: 'Uốn tóc trending (Free cắt)', category: 'Uốn - Nhuộm', price: 450000, duration_minutes: 120, is_active: true },
-  { id: 'demo-shampoo', name: 'Gội đầu (Shampoo)', category: 'Thư giãn', price: 60000, duration_minutes: 15, is_active: true },
-]
-
-export const DEMO_INVENTORY: InventoryItem[] = [
-  { id: 'demo-pomade', item_code: 'INV-POMADE', name: 'Sáp tạo kiểu', quantity: 18, unit: 'hộp', unit_cost: 135000, field_one_label: 'Nhà cung cấp', field_one_value: 'Local Brand', field_two_label: 'Vị trí', field_two_value: 'Kệ A1' },
-  { id: 'demo-shampoo', item_code: 'INV-SHAMPOO', name: 'Dầu gội', quantity: 12, unit: 'chai', unit_cost: 98000, field_one_label: 'Nhà cung cấp', field_one_value: 'Hair Care', field_two_label: 'Vị trí', field_two_value: 'Kệ B2' },
-]
+import type { BankAccount, Booking, CommissionMetrics, CommissionRule, Customer, DashboardMetrics, InventoryItem, InventoryMovement, Invoice, LandingContent, LandingMedia, ReportScope, Service, Staff, TelegramConfigStatus } from '../types/domain'
 
 function unwrap<T>({ data, error }: { data: T | null; error: { message: string } | null }): T {
   if (error) throw new Error(error.message)
@@ -59,7 +19,6 @@ export async function getStaff(): Promise<Staff[]> {
 
 export async function saveStaff(staff: Partial<Staff>): Promise<Staff> {
   const client = requireSupabase()
-  if (staff.id?.startsWith('demo-')) throw new Error('Chế độ demo không ghi dữ liệu.')
   const { data, error } = staff.id
     ? await client.from('staff_profiles').update(staff).eq('id', staff.id).select().single()
     : await client.from('staff_profiles').insert(staff).select().single()
@@ -87,11 +46,9 @@ export async function getServices(): Promise<Service[]> {
 
 export async function saveService(service: Partial<Service>): Promise<Service> {
   const client = requireSupabase()
-  const { data, error } = service.id?.startsWith('demo-')
-    ? { data: null, error: { message: 'Chế độ demo không ghi dữ liệu.' } }
-    : service.id
-      ? await client.from('services').update(service).eq('id', service.id).select().single()
-      : await client.from('services').insert(service).select().single()
+  const { data, error } = service.id
+    ? await client.from('services').update(service).eq('id', service.id).select().single()
+    : await client.from('services').insert(service).select().single()
   return unwrap<Service>({ data: data as Service | null, error })
 }
 
@@ -120,11 +77,9 @@ export async function getInventoryMovements(): Promise<InventoryMovement[]> {
 
 export async function saveInventory(item: Partial<InventoryItem>): Promise<InventoryItem> {
   const client = requireSupabase()
-  const { data, error } = item.id?.startsWith('demo-')
-    ? { data: null, error: { message: 'Chế độ demo không ghi dữ liệu.' } }
-    : item.id
-      ? await client.from('inventory_items').update(item).eq('id', item.id).select().single()
-      : await client.from('inventory_items').insert(item).select().single()
+  const { data, error } = item.id
+    ? await client.from('inventory_items').update(item).eq('id', item.id).select().single()
+    : await client.from('inventory_items').insert(item).select().single()
   return unwrap<InventoryItem>({ data: data as InventoryItem | null, error })
 }
 
@@ -187,6 +142,20 @@ export async function getCommissionMetrics(date: string, scope: ReportScope): Pr
   return unwrap<CommissionMetrics>({ data: data as CommissionMetrics | null, error })
 }
 
+export async function getTelegramConfigStatus(): Promise<TelegramConfigStatus> {
+  const { data, error } = await requireSupabase().rpc('telegram_config_status')
+  return unwrap<TelegramConfigStatus>({ data: data as TelegramConfigStatus | null, error })
+}
+
+export async function saveTelegramConfig(payload: { botToken: string; chatId: string; enabled: boolean }): Promise<TelegramConfigStatus> {
+  const { data, error } = await requireSupabase().rpc('configure_telegram', {
+    p_bot_token: payload.botToken,
+    p_chat_id: payload.chatId,
+    p_enabled: payload.enabled,
+  })
+  return unwrap<TelegramConfigStatus>({ data: data as TelegramConfigStatus | null, error })
+}
+
 export async function getLandingContent() {
   const { data, error } = await requireSupabase().from('landing_content').select('*').order('content_key')
   return unwrap<LandingContent[]>({ data: data as LandingContent[] | null, error })
@@ -203,22 +172,45 @@ export async function upsertLandingContent(contentKey: string, contentValue: Rec
 }
 
 export async function getLandingMedia(): Promise<LandingMedia[]> {
-  const { data, error } = await requireSupabase().from('landing_media').select('id, section_key, storage_path, alt_text, sort_order, is_active').eq('is_active', true).order('section_key').order('sort_order').order('created_at')
+  const { data, error } = await requireSupabase().from('landing_media').select('id, section_key, storage_path, public_url, alt_text, sort_order, is_active').eq('is_active', true).order('section_key').order('sort_order').order('created_at')
   return unwrap<LandingMedia[]>({ data: data as LandingMedia[] | null, error })
 }
 
-export async function uploadLandingMedia(file: File, sectionKey: LandingMedia['section_key'], sortOrder: number, altText: string): Promise<LandingMedia> {
+function validateLandingImage(file: File) {
   if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) throw new Error('Ảnh landing phải là JPG, PNG hoặc WebP và không vượt quá 10MB.')
+}
+
+function landingMediaPath(file: File, sectionKey: LandingMedia['section_key']) {
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-  const storagePath = `${sectionKey}/${crypto.randomUUID()}.${extension}`
+  return `${sectionKey}/${crypto.randomUUID()}.${extension}`
+}
+
+export async function uploadLandingMedia(file: File, sectionKey: LandingMedia['section_key'], sortOrder: number, altText: string): Promise<LandingMedia> {
+  validateLandingImage(file)
+  const storagePath = landingMediaPath(file, sectionKey)
   const client = requireSupabase()
   const { error: uploadError } = await client.storage.from('landing-media').upload(storagePath, file, { cacheControl: '31536000', upsert: false, contentType: file.type })
   if (uploadError) throw new Error(uploadError.message)
-  const { data, error } = await client.from('landing_media').insert({ section_key: sectionKey, storage_path: storagePath, alt_text: altText || 'Hình ảnh Chilling Barber Shop', sort_order: sortOrder }).select('id, section_key, storage_path, alt_text, sort_order, is_active').single()
+  const { data, error } = await client.from('landing_media').insert({ section_key: sectionKey, storage_path: storagePath, public_url: null, alt_text: altText || 'Hình ảnh Chilling Barber Shop', sort_order: sortOrder }).select('id, section_key, storage_path, public_url, alt_text, sort_order, is_active').single()
   if (error) {
     await client.storage.from('landing-media').remove([storagePath])
     throw new Error(error.message)
   }
+  return data as LandingMedia
+}
+
+export async function replaceLandingMedia(media: LandingMedia, file: File): Promise<LandingMedia> {
+  validateLandingImage(file)
+  const storagePath = landingMediaPath(file, media.section_key)
+  const client = requireSupabase()
+  const { error: uploadError } = await client.storage.from('landing-media').upload(storagePath, file, { cacheControl: '31536000', upsert: false, contentType: file.type })
+  if (uploadError) throw new Error(uploadError.message)
+  const { data, error } = await client.from('landing_media').update({ storage_path: storagePath, public_url: null }).eq('id', media.id).select('id, section_key, storage_path, public_url, alt_text, sort_order, is_active').single()
+  if (error) {
+    await client.storage.from('landing-media').remove([storagePath])
+    throw new Error(error.message)
+  }
+  if (!media.public_url && !media.storage_path.startsWith('legacy/')) await client.storage.from('landing-media').remove([media.storage_path])
   return data as LandingMedia
 }
 
@@ -231,10 +223,12 @@ export async function deleteLandingMedia(media: LandingMedia): Promise<void> {
   const client = requireSupabase()
   const { error } = await client.from('landing_media').delete().eq('id', media.id)
   if (error) throw new Error(error.message)
-  const { error: storageError } = await client.storage.from('landing-media').remove([media.storage_path])
-  if (storageError) throw new Error(storageError.message)
+  if (!media.public_url && !media.storage_path.startsWith('legacy/')) {
+    const { error: storageError } = await client.storage.from('landing-media').remove([media.storage_path])
+    if (storageError) throw new Error(storageError.message)
+  }
 }
 
-export function getLandingMediaUrl(storagePath: string): string {
-  return requireSupabase().storage.from('landing-media').getPublicUrl(storagePath).data.publicUrl
+export function getLandingMediaUrl(media: Pick<LandingMedia, 'storage_path' | 'public_url'>): string {
+  return media.public_url || requireSupabase().storage.from('landing-media').getPublicUrl(media.storage_path).data.publicUrl
 }

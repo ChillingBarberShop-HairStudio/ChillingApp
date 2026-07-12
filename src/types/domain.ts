@@ -120,6 +120,13 @@ export type CommissionMetrics = {
   items: Array<{ staffId: string | null; name: string; revenue: number; rate: number; staffShare: number; ownerShare: number }>
 }
 
+export type TelegramConfigStatus = {
+  configured: boolean
+  chatId: string | null
+  enabled: boolean
+  updatedAt: string | null
+}
+
 export type CheckoutLine = {
   serviceId: string
   staffId: string
@@ -147,6 +154,7 @@ export type LandingMedia = {
   id: string
   section_key: 'hero' | 'studio' | 'services' | 'gallery'
   storage_path: string
+  public_url: string | null
   alt_text: string
   sort_order: number
   is_active: boolean

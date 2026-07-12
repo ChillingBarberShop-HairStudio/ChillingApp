@@ -2,16 +2,16 @@
 import { onMounted, ref } from 'vue'
 import { CircleDollarSign, Percent, Save, UserRound } from 'lucide-vue-next'
 import KpiCard from '../components/KpiCard.vue'
-import { DEMO_STAFF, getCommissionMetrics, getCommissionRules, getStaff, saveCommissionRule } from '../lib/api'
+import { getCommissionMetrics, getCommissionRules, getStaff, saveCommissionRule } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { CommissionMetrics, CommissionRule, ReportScope, Staff } from '../types/domain'
 
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
 const selectedScope = ref<ReportScope>('day')
-const staff = ref<Staff[]>(DEMO_STAFF)
+const staff = ref<Staff[]>([])
 const rules = ref<CommissionRule[]>([])
 const rates = ref<Record<string, number>>({})
-const metrics = ref<CommissionMetrics>({ date: selectedDate.value, scope: 'day', revenue: 4380000, staffShare: 2190000, ownerShare: 2190000, items: [{ staffId: 'demo-nam', name: 'Nam', revenue: 2200000, rate: 50, staffShare: 1100000, ownerShare: 1100000 }, { staffId: 'demo-huong', name: 'Hương', revenue: 2180000, rate: 50, staffShare: 1090000, ownerShare: 1090000 }] })
+const metrics = ref<CommissionMetrics>({ date: selectedDate.value, scope: 'day', revenue: 0, staffShare: 0, ownerShare: 0, items: [] })
 const error = ref('')
 const savingId = ref('')
 const money = (value: number) => `${value.toLocaleString('vi-VN')}đ`
@@ -35,7 +35,7 @@ async function load() {
 }
 
 async function saveRate(person: Staff) {
-  if (!isSupabaseConfigured) { error.value = 'Chế độ demo không ghi dữ liệu.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   const commissionRate = Math.max(0, Math.min(100, Number(rates.value[person.id] ?? 50)))
   const existing = rules.value.find((rule) => rule.staff_id === person.id)
   savingId.value = person.id

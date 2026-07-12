@@ -5,7 +5,7 @@ import { getCustomers } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Customer } from '../types/domain'
 
-const customers = ref<Customer[]>([{ id: 'demo-1', customer_code: 'CUS-CHL001', full_name: 'Nguyễn Minh', phone: '0327969930', created_at: new Date().toISOString() }, { id: 'demo-2', customer_code: 'CUS-CHL002', full_name: 'Trần Nam', phone: '0900000002', created_at: new Date().toISOString() }])
+const customers = ref<Customer[]>([])
 const search = ref('')
 const filtered = computed(() => customers.value.filter((customer) => `${customer.full_name} ${customer.phone}`.toLocaleLowerCase().includes(search.value.toLocaleLowerCase())))
 onMounted(async () => { if (isSupabaseConfigured) customers.value = await getCustomers() })

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { BriefcaseBusiness, ImagePlus, Plus, Trash2, UserRound } from 'lucide-vue-next'
-import { DEMO_STAFF, deleteStaff, getStaff, saveStaff, uploadStaffAvatar } from '../lib/api'
+import { deleteStaff, getStaff, saveStaff, uploadStaffAvatar } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Staff } from '../types/domain'
 
-const staff = ref<Staff[]>(DEMO_STAFF)
+const staff = ref<Staff[]>([])
 const showForm = ref(false)
 const error = ref('')
 const avatarFile = ref<File | null>(null)

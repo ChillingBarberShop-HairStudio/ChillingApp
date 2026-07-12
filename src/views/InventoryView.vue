@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ArrowDownToLine, ArrowUpFromLine, ClipboardList, PackagePlus, Save } from 'lucide-vue-next'
-import { DEMO_INVENTORY, getInventory, getInventoryMovements, recordInventoryMovement, saveInventory } from '../lib/api'
+import { getInventory, getInventoryMovements, recordInventoryMovement, saveInventory } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { InventoryItem, InventoryMovement } from '../types/domain'
 
 type StockAction = 'in' | 'out'
 
-const items = ref<InventoryItem[]>(DEMO_INVENTORY)
+const items = ref<InventoryItem[]>([])
 const movements = ref<InventoryMovement[]>([])
 const error = ref('')
 const showAction = ref<StockAction | null>(null)
@@ -62,7 +62,7 @@ async function saveItem(item: InventoryItem) {
 
 async function submitImport() {
   error.value = ''
-  if (!isSupabaseConfigured) { error.value = 'Chế độ demo không ghi dữ liệu.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   if (importForm.quantity <= 0 || importForm.unitCost < 0) { error.value = 'Số lượng và đơn giá nhập kho không hợp lệ.'; return }
   try {
     let item = selectedImportItem.value
@@ -84,7 +84,7 @@ async function submitImport() {
 
 async function submitExport() {
   error.value = ''
-  if (!isSupabaseConfigured) { error.value = 'Chế độ demo không ghi dữ liệu.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   if (!exportForm.itemId || exportForm.quantity <= 0) { error.value = 'Vui lòng chọn sản phẩm và số lượng xuất.'; return }
   try {
     await recordInventoryMovement({ itemId: exportForm.itemId, type: 'out', quantity: exportForm.quantity, note: exportForm.note.trim() || `Xuất kho ${today()}` })

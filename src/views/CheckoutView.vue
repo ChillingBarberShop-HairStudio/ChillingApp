@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Banknote, CirclePlus, CreditCard, Minus, Plus, QrCode, ReceiptText, Scissors, X } from 'lucide-vue-next'
-import { DEMO_SERVICES, DEMO_STAFF, checkout, getBankAccounts, getBookingForCheckout, getServices, getStaff, saveBankAccount, saveService } from '../lib/api'
+import { checkout, getBankAccounts, getBookingForCheckout, getServices, getStaff, saveBankAccount, saveService } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { BankAccount, CheckoutLine, Service, Staff } from '../types/domain'
 import { useRoute, useRouter } from 'vue-router'
 
-const services = ref<Service[]>(DEMO_SERVICES)
-const staff = ref<Staff[]>(DEMO_STAFF)
-const accounts = ref<BankAccount[]>([{ id: 'demo-bank', bank_name: 'MB Bank', bank_bin: '970422', account_number: '0327969930', account_name: 'CHILLING BARBER SHOP', branch_name: 'Bình Dương', is_active: true }])
+const services = ref<Service[]>([])
+const staff = ref<Staff[]>([])
+const accounts = ref<BankAccount[]>([])
 const customer = reactive({ fullName: '', phone: '' })
 const paymentMethod = ref<'cash' | 'bank_transfer'>('cash')
-const bankAccountId = ref('demo-bank')
+const bankAccountId = ref('')
 const discountPercent = ref(0)
-const lines = ref<CheckoutLine[]>([{ serviceId: 'demo-cut', staffId: 'demo-nam', quantity: 1 }])
+const lines = ref<CheckoutLine[]>([{ serviceId: '', staffId: '', quantity: 1 }])
 const error = ref('')
 const success = ref('')
 const showAdd = ref<'service' | 'bank' | null>(null)
@@ -55,7 +55,7 @@ async function load() {
 }
 function addLine() { lines.value.push({ serviceId: services.value[0]?.id ?? '', staffId: staff.value[0]?.id ?? '', quantity: 1 }) }
 function removeLine(index: number) { if (lines.value.length > 1) lines.value.splice(index, 1) }
-async function pay() { error.value = ''; success.value = ''; if (!isSupabaseConfigured) { error.value = 'Chế độ demo không tạo hóa đơn.'; return } try { const result = await checkout({ bookingId: bookingId.value || null, customer, paymentMethod: paymentMethod.value, bankAccountId: paymentMethod.value === 'bank_transfer' ? bankAccountId.value : null, paymentReference: paymentMethod.value === 'bank_transfer' ? transferNote.value : null, discountPercent: discountPercent.value, lines: lines.value }); success.value = `Đã tạo hóa đơn ${String(result.invoiceNo)} · ${money(Number(result.totalAmount))}`; customer.fullName = ''; customer.phone = ''; discountPercent.value = 0; bookingId.value = ''; await router.replace({ path: '/checkout' }) } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Thanh toán không thành công.' } }
+async function pay() { error.value = ''; success.value = ''; if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return } try { const result = await checkout({ bookingId: bookingId.value || null, customer, paymentMethod: paymentMethod.value, bankAccountId: paymentMethod.value === 'bank_transfer' ? bankAccountId.value : null, paymentReference: paymentMethod.value === 'bank_transfer' ? transferNote.value : null, discountPercent: discountPercent.value, lines: lines.value }); success.value = `Đã tạo hóa đơn ${String(result.invoiceNo)} · ${money(Number(result.totalAmount))}`; customer.fullName = ''; customer.phone = ''; discountPercent.value = 0; bookingId.value = ''; await router.replace({ path: '/checkout' }) } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Thanh toán không thành công.' } }
 async function addService() { try { const saved = await saveService(serviceForm); services.value.push(saved); showAdd.value = null } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Không thể thêm dịch vụ.' } }
 async function addBank() { try { const saved = await saveBankAccount(bankForm); accounts.value.push(saved); bankAccountId.value = saved.id; showAdd.value = null } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Không thể thêm tài khoản.' } }
 onMounted(load)

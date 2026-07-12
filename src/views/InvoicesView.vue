@@ -5,7 +5,7 @@ import { getInvoices } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Invoice } from '../types/domain'
 
-const invoices = ref<Invoice[]>([{ id: 'demo-invoice', invoice_no: 'INV-260710-00001', customer_name: 'Nguyễn Minh', customer_phone: '0327969930', subtotal: 160000, discount_amount: 0, total_amount: 160000, payment_method: 'cash', paid_at: new Date().toISOString(), status: 'paid', invoice_lines: [{ service_name: 'Thợ cắt', quantity: 1, unit_price: 70000, staff_name: 'Nam' }, { service_name: 'Gội đầu', quantity: 1, unit_price: 60000, staff_name: 'Hương' }] }])
+const invoices = ref<Invoice[]>([])
 const selected = ref<Invoice | null>(null)
 const exportingPdf = ref(false)
 const money = (value: number) => `${value.toLocaleString('vi-VN')}đ`

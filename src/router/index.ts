@@ -9,6 +9,7 @@ import InvoicesView from '../views/InvoicesView.vue'
 import TaxView from '../views/TaxView.vue'
 import LandingView from '../views/LandingView.vue'
 import CommissionView from '../views/CommissionView.vue'
+import TelegramView from '../views/TelegramView.vue'
 import InformationView from '../views/InformationView.vue'
 
 export default createRouter({
@@ -24,6 +25,7 @@ export default createRouter({
     { path: '/tax', component: TaxView, meta: { title: 'Thuế & báo cáo' } },
     { path: '/landing', component: LandingView, meta: { title: 'Quản lý landing page' } },
     { path: '/commissions', component: CommissionView, meta: { title: 'Chiết khấu chủ & thợ' } },
+    { path: '/telegram', component: TelegramView, meta: { title: 'Telegram Bot' } },
     { path: '/settings', component: InformationView, meta: { title: 'Thiết lập hệ thống' } },
     { path: '/docs', component: InformationView, meta: { title: 'Tài liệu vận hành' } },
   ],

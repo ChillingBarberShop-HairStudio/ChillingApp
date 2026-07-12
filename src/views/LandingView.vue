@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ExternalLink, ImagePlus, Save, Send, Trash2 } from 'lucide-vue-next'
-import { deleteLandingMedia, getLandingContent, getLandingMedia, getLandingMediaUrl, saveLandingContent, saveLandingMedia, uploadLandingMedia, upsertLandingContent } from '../lib/api'
+import { ExternalLink, ImagePlus, RefreshCw, Save, Send, Trash2 } from 'lucide-vue-next'
+import { deleteLandingMedia, getLandingContent, getLandingMedia, getLandingMediaUrl, replaceLandingMedia, saveLandingContent, saveLandingMedia, uploadLandingMedia, upsertLandingContent } from '../lib/api'
 import { isSupabaseConfigured, requireSupabase } from '../lib/supabase'
 import type { LandingContent, LandingMedia } from '../types/domain'
 
 type SectionKey = LandingMedia['section_key']
-type SectionDefinition = { key: SectionKey; label: string; description: string; imageHint: string; fields: Array<{ key: string; label: string; fallback: string }> }
+type SectionDefinition = {
+  key: SectionKey
+  label: string
+  description: string
+  maxImages: number
+  fields: Array<{ key: string; label: string; fallback: string }>
+}
 
 const sections: SectionDefinition[] = [
-  { key: 'hero', label: 'Trang đầu', description: 'Ảnh hero và các header quảng cáo đầu trang.', imageHint: 'Ảnh hiện tại: 1', fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Hair studio tại Bàu Bàng' }, { key: 'title', label: 'Tiêu đề chính', fallback: 'Chất riêng' }, { key: 'highlight', label: 'Tiêu đề nhấn', fallback: 'Chuẩn đẹp' }, { key: 'description', label: 'Mô tả', fallback: 'Cắt tóc, uốn, nhuộm và chăm sóc diện mạo cùng đội ngũ barber tận tâm trong không gian chỉn chu, thoải mái.' }] },
-  { key: 'studio', label: 'Không gian barber', description: 'Bộ ảnh studio và phần giới thiệu trang hai.', imageHint: 'Ảnh hiện tại: 9', fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Không gian & tay nghề' }, { key: 'titleLineOne', label: 'Tiêu đề dòng 1', fallback: 'Barber studio' }, { key: 'titleLineTwo', label: 'Tiêu đề dòng 2', fallback: 'đúng chất của bạn' }, { key: 'description', label: 'Mô tả', fallback: 'Từ tư vấn kiểu tóc phù hợp khuôn mặt đến kỹ thuật hoàn thiện, mỗi dịch vụ đều rõ giá, rõ thời gian và được thực hiện với sự tập trung cao nhất.' }] },
-  { key: 'services', label: 'Dịch vụ và mẫu tóc', description: 'Bộ ảnh gợi ý mẫu tóc ở trang ba.', imageHint: 'Ảnh hiện tại: 3', fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Dịch vụ và mẫu tóc' }, { key: 'titleLineOne', label: 'Tiêu đề dòng 1', fallback: 'Chọn kiểu phù hợp' }, { key: 'titleLineTwo', label: 'Tiêu đề dòng 2', fallback: 'Trọn vẹn phong cách' }] },
-  { key: 'gallery', label: 'Tác phẩm hoàn thiện', description: 'Gallery thành phẩm ở trang bốn.', imageHint: 'Ảnh hiện tại: 10', fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Chilling lookbook' }, { key: 'title', label: 'Tiêu đề', fallback: 'Tác phẩm hoàn thiện' }, { key: 'description', label: 'Mô tả', fallback: 'Một số phong cách tóc và trải nghiệm hoàn thiện tại Chilling Barber Shop.' }] },
+  { key: 'hero', label: 'Trang đầu', description: 'Ảnh hero và các header quảng cáo đầu trang.', maxImages: 1, fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Hair studio tại Bàu Bàng' }, { key: 'title', label: 'Tiêu đề chính', fallback: 'Chất riêng' }, { key: 'highlight', label: 'Tiêu đề nhấn', fallback: 'Chuẩn đẹp' }, { key: 'description', label: 'Mô tả', fallback: 'Cắt tóc, uốn, nhuộm và chăm sóc diện mạo cùng đội ngũ barber tận tâm trong không gian chỉn chu, thoải mái.' }] },
+  { key: 'studio', label: 'Không gian barber', description: 'Bộ ảnh studio và phần giới thiệu trang hai.', maxImages: 9, fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Không gian & tay nghề' }, { key: 'titleLineOne', label: 'Tiêu đề dòng 1', fallback: 'Barber studio' }, { key: 'titleLineTwo', label: 'Tiêu đề dòng 2', fallback: 'đúng chất của bạn' }, { key: 'description', label: 'Mô tả', fallback: 'Từ tư vấn kiểu tóc phù hợp khuôn mặt đến kỹ thuật hoàn thiện, mỗi dịch vụ đều rõ giá, rõ thời gian và được thực hiện với sự tập trung cao nhất.' }] },
+  { key: 'services', label: 'Dịch vụ và mẫu tóc', description: 'Bộ ảnh gợi ý mẫu tóc ở trang ba.', maxImages: 3, fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Dịch vụ và mẫu tóc' }, { key: 'titleLineOne', label: 'Tiêu đề dòng 1', fallback: 'Chọn kiểu phù hợp' }, { key: 'titleLineTwo', label: 'Tiêu đề dòng 2', fallback: 'Trọn vẹn phong cách' }] },
+  { key: 'gallery', label: 'Tác phẩm hoàn thiện', description: 'Gallery thành phẩm ở trang bốn.', maxImages: 10, fields: [{ key: 'eyebrow', label: 'Nhãn giới thiệu', fallback: 'Chilling lookbook' }, { key: 'title', label: 'Tiêu đề', fallback: 'Tác phẩm hoàn thiện' }, { key: 'description', label: 'Mô tả', fallback: 'Một số phong cách tóc và trải nghiệm hoàn thiện tại Chilling Barber Shop.' }] },
 ]
 
 const contentRows = ref<LandingContent[]>([])
@@ -44,7 +50,7 @@ async function load() {
 }
 
 async function saveCopy(section: SectionDefinition) {
-  if (!isSupabaseConfigured) { error.value = 'Chế độ demo không ghi dữ liệu.'; return }
+  if (!isSupabaseConfigured) { error.value = 'Chưa có cấu hình Supabase.'; return }
   busySection.value = section.key
   try {
     const value = drafts.value[section.key]
@@ -70,6 +76,11 @@ async function saveCopy(section: SectionDefinition) {
 async function addImage(section: SectionDefinition, event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file || !isSupabaseConfigured) return
+  if ((mediaBySection.value[section.key]?.length ?? 0) >= section.maxImages) {
+    error.value = `${section.label} đã đủ ${section.maxImages} ảnh. Hãy thay ảnh cũ hoặc xóa một ảnh trước.`
+    ;(event.target as HTMLInputElement).value = ''
+    return
+  }
   busySection.value = section.key
   try {
     const image = await uploadLandingMedia(file, section.key, (mediaBySection.value[section.key]?.length ?? 0) + 1, `Ảnh ${section.label} Chilling Barber Shop`)
@@ -83,13 +94,43 @@ async function addImage(section: SectionDefinition, event: Event) {
   }
 }
 
-async function updateImage(image: LandingMedia) {
-  try { await saveLandingMedia(image); message.value = 'Đã cập nhật mô tả ảnh.' } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Không thể cập nhật ảnh.' }
+async function replaceImage(image: LandingMedia, event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  busySection.value = image.section_key
+  try {
+    const saved = await replaceLandingMedia(image, file)
+    const index = media.value.findIndex((item) => item.id === image.id)
+    if (index >= 0) media.value[index] = saved
+    message.value = 'Đã thay ảnh. Ảnh cũ đã được gỡ khỏi dữ liệu landing page.'
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Không thể thay ảnh.'
+  } finally {
+    busySection.value = ''
+    ;(event.target as HTMLInputElement).value = ''
+  }
 }
+
+async function updateImage(image: LandingMedia) {
+  try {
+    await saveLandingMedia(image)
+    message.value = 'Đã cập nhật mô tả ảnh.'
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Không thể cập nhật ảnh.'
+  }
+}
+
 async function removeImage(image: LandingMedia) {
   if (!confirm('Xóa ảnh này khỏi landing page?')) return
-  try { await deleteLandingMedia(image); media.value = media.value.filter((item) => item.id !== image.id); message.value = 'Đã xóa ảnh khỏi landing page.' } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Không thể xóa ảnh.' }
+  try {
+    await deleteLandingMedia(image)
+    media.value = media.value.filter((item) => item.id !== image.id)
+    message.value = 'Đã xóa ảnh khỏi landing page.'
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Không thể xóa ảnh.'
+  }
 }
+
 async function requestDeploy() {
   const endpoint = import.meta.env.VITE_DEPLOY_WEBHOOK_URL
   if (!endpoint) { error.value = 'Chưa cấu hình VITE_DEPLOY_WEBHOOK_URL cho Cloudflare Worker.'; return }
@@ -98,7 +139,9 @@ async function requestDeploy() {
     const response = await fetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'landing_content_changed' }) })
     if (!response.ok) throw new Error('Cloudflare Worker từ chối yêu cầu deploy.')
     message.value = 'Đã gửi yêu cầu deploy. Nội dung và ảnh đã cập nhật trực tiếp từ Supabase.'
-  } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Không thể yêu cầu deploy.' }
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Không thể yêu cầu deploy.'
+  }
 }
 
 buildDrafts()
@@ -106,7 +149,26 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page-intro compact"><div><p class="eyebrow">Nội dung công khai</p><h2>Quản lý landing page</h2><p>Chỉnh sửa các header cố định và quản lý ảnh từng khu vực. Ảnh được phân phối từ Supabase Storage, tự cập nhật trên landing page mà không đưa token GitHub vào trình duyệt.</p></div><div class="intro-actions"><a class="secondary-button" :href="landingUrl" target="_blank" rel="noreferrer"><ExternalLink :size="17" /> Xem landing</a><button class="primary-button" @click="requestDeploy"><Send :size="17" /> Yêu cầu deploy</button></div></div>
+  <div class="page-intro compact">
+    <div><p class="eyebrow">Nội dung công khai</p><h2>Quản lý landing page</h2><p>Chỉnh sửa các header cố định, thay trực tiếp ảnh cũ hoặc thêm ảnh trong giới hạn layout. Ảnh và nội dung cập nhật ngay từ Supabase, không đưa token GitHub vào trình duyệt.</p></div>
+    <div class="intro-actions"><a class="secondary-button" :href="landingUrl" target="_blank" rel="noreferrer"><ExternalLink :size="17" /> Xem landing</a><button class="primary-button" @click="requestDeploy"><Send :size="17" /> Yêu cầu deploy</button></div>
+  </div>
   <p v-if="error" class="error-banner">{{ error }}</p><p v-if="message" class="success-banner">{{ message }}</p>
-  <section class="landing-manager"><article v-for="section in sections" :key="section.key" class="panel landing-editor"><div class="landing-editor-heading"><div><span class="role-badge">{{ section.imageHint }} · hiện có {{ mediaBySection[section.key]?.length ?? 0 }}</span><h3>{{ section.label }}</h3><p>{{ section.description }}</p></div><ImagePlus :size="22" /></div><div class="landing-copy-fields"><label v-for="field in section.fields" :key="field.key"><span>{{ field.label }}</span><textarea v-if="field.key === 'description'" v-model="drafts[section.key][field.key]" rows="3"></textarea><input v-else v-model="drafts[section.key][field.key]" /></label></div><button class="secondary-button" :disabled="busySection === section.key" @click="saveCopy(section)"><Save :size="17" /> Lưu header</button><div class="media-manager"><div class="media-manager-heading"><strong>Hình ảnh {{ section.label }}</strong><label class="upload-button"><ImagePlus :size="16" /> Thêm ảnh<input type="file" accept="image/png,image/jpeg,image/webp" :disabled="busySection === section.key" @change="addImage(section, $event)" /></label></div><div v-if="mediaBySection[section.key]?.length" class="landing-media-grid"><figure v-for="image in mediaBySection[section.key]" :key="image.id"><img :src="getLandingMediaUrl(image.storage_path)" :alt="image.alt_text" /><figcaption><input v-model="image.alt_text" aria-label="Mô tả ảnh" @change="updateImage(image)" /><button type="button" aria-label="Xóa ảnh" @click="removeImage(image)"><Trash2 :size="16" /></button></figcaption></figure></div><p v-else class="media-empty">Chưa có ảnh động. Landing page đang dùng ảnh mặc định trong source.</p></div></article></section>
+  <section class="landing-manager">
+    <article v-for="section in sections" :key="section.key" class="panel landing-editor">
+      <div class="landing-editor-heading"><div><span class="role-badge">Tối đa {{ section.maxImages }} ảnh · hiện có {{ mediaBySection[section.key]?.length ?? 0 }}</span><h3>{{ section.label }}</h3><p>{{ section.description }}</p></div><ImagePlus :size="22" /></div>
+      <div class="landing-copy-fields"><label v-for="field in section.fields" :key="field.key"><span>{{ field.label }}</span><textarea v-if="field.key === 'description'" v-model="drafts[section.key][field.key]" rows="3"></textarea><input v-else v-model="drafts[section.key][field.key]" /></label></div>
+      <button class="secondary-button" :disabled="busySection === section.key" @click="saveCopy(section)"><Save :size="17" /> Lưu header</button>
+      <div class="media-manager">
+        <div class="media-manager-heading"><strong>Hình ảnh {{ section.label }}</strong><label class="upload-button" :class="{ disabled: (mediaBySection[section.key]?.length ?? 0) >= section.maxImages }"><ImagePlus :size="16" /> Thêm ảnh<input type="file" accept="image/png,image/jpeg,image/webp" :disabled="busySection === section.key || (mediaBySection[section.key]?.length ?? 0) >= section.maxImages" @change="addImage(section, $event)" /></label></div>
+        <div v-if="mediaBySection[section.key]?.length" class="landing-media-grid">
+          <figure v-for="image in mediaBySection[section.key]" :key="image.id">
+            <img :src="getLandingMediaUrl(image)" :alt="image.alt_text" />
+            <figcaption><input v-model="image.alt_text" aria-label="Mô tả ảnh" @change="updateImage(image)" /><div class="landing-media-actions"><label class="icon-upload" title="Thay ảnh"><RefreshCw :size="15" /><input type="file" accept="image/png,image/jpeg,image/webp" :disabled="busySection === section.key" @change="replaceImage(image, $event)" /></label><button type="button" aria-label="Xóa ảnh" title="Xóa ảnh" @click="removeImage(image)"><Trash2 :size="16" /></button></div></figcaption>
+          </figure>
+        </div>
+        <p v-else class="media-empty">Chưa có ảnh ở khu vực này. Chọn Thêm ảnh để cập nhật landing page.</p>
+      </div>
+    </article>
+  </section>
 </template>

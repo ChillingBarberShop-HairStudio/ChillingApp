@@ -6,7 +6,7 @@ import { getOnlineBookings, setBookingStatus } from '../lib/api'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Booking } from '../types/domain'
 
-const orders = ref<Booking[]>([{ id: 'demo-order', booking_code: 'CHL-260710-00001', customer_name: 'Nguyễn Minh', customer_phone: '0327969930', appointment_date: new Date().toISOString().slice(0, 10), time_slot: '14:30:00', total_amount: 160000, status: 'waiting', created_at: new Date().toISOString(), booking_services: [{ service_name: 'Thợ cắt', staff_name: 'Nam' }, { service_name: 'Gội đầu', staff_name: 'Hương' }] }])
+const orders = ref<Booking[]>([])
 const error = ref('')
 const router = useRouter()
 const labels = { waiting: 'Chờ phục vụ', serving: 'Đang phục vụ', completed: 'Hoàn thành', cancelled: 'Đã hủy' }
