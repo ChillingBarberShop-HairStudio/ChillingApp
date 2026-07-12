@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Bell, ChevronLeft, LogOut, Menu, X } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import { NAVIGATION, SECONDARY_NAVIGATION } from '../data/navigation'
 import { getRecentNotifications } from '../lib/api'
-import { isSupabaseConfigured } from '../lib/supabase'
+import { isSupabaseConfigured, requireSupabase } from '../lib/supabase'
 import { useSession } from '../stores/session'
 import type { AdminNotification } from '../types/domain'
 
@@ -26,14 +26,31 @@ async function loadNotifications() {
 async function toggleNotifications() { notificationOpen.value = !notificationOpen.value; if (notificationOpen.value) await loadNotifications() }
 async function logout() { await signOut() }
 
-onMounted(loadNotifications)
+let notificationInterval: ReturnType<typeof window.setInterval> | undefined
+let stopRealtime: (() => void) | undefined
+
+onMounted(() => {
+  void loadNotifications()
+  if (!isSupabaseConfigured) return
+  const client = requireSupabase()
+  const channel = client.channel('chilling-booking-notifications')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => { void loadNotifications() })
+    .subscribe()
+  stopRealtime = () => { void client.removeChannel(channel) }
+  notificationInterval = window.setInterval(() => { void loadNotifications() }, 30000)
+})
+
+onUnmounted(() => {
+  if (notificationInterval) window.clearInterval(notificationInterval)
+  stopRealtime?.()
+})
 </script>
 
 <template>
   <div class="admin-shell" :class="{ 'admin-shell--collapsed': collapsed, 'admin-shell--open': menuOpen }">
     <aside class="admin-sidebar">
       <div class="brand-row"><img src="/logo.PNG" alt="Chilling Barber Shop" class="brand-logo" /><div class="brand-copy"><strong>CHILLING</strong><span>BARBER OS</span></div><button class="icon-button sidebar-close" type="button" aria-label="Đóng menu" @click="menuOpen = false"><X :size="20" /></button></div>
-      <nav class="sidebar-nav" aria-label="Điều hướng quản trị"><RouterLink v-for="item in NAVIGATION" :key="item.to" :to="item.to" class="nav-link" @click="menuOpen = false"><component :is="item.icon" :size="20" /><span>{{ item.label }}</span><small v-if="item.note">{{ item.note }}</small></RouterLink><p class="nav-label">Hệ thống</p><RouterLink v-for="item in SECONDARY_NAVIGATION" :key="item.to" :to="item.to" class="nav-link" @click="menuOpen = false"><component :is="item.icon" :size="20" /><span>{{ item.label }}</span></RouterLink></nav>
+      <nav class="sidebar-nav" aria-label="Điều hướng quản trị"><RouterLink v-for="item in NAVIGATION" :key="item.to" :to="item.to" class="nav-link" @click="menuOpen = false"><component :is="item.icon" :size="20" /><span>{{ item.label }}</span><small v-if="item.note">{{ item.note }}</small></RouterLink><template v-if="SECONDARY_NAVIGATION.length"><p class="nav-label">Hệ thống</p><RouterLink v-for="item in SECONDARY_NAVIGATION" :key="item.to" :to="item.to" class="nav-link" @click="menuOpen = false"><component :is="item.icon" :size="20" /><span>{{ item.label }}</span></RouterLink></template></nav>
       <div class="sidebar-bottom"><a class="landing-link" :href="landingUrl" target="_blank" rel="noreferrer">Mở landing page</a><button type="button" class="logout-button" @click="logout"><LogOut :size="18" /> Đăng xuất</button><p class="system-copyright">© 2026 Engineered by Vinh | All rights reserved</p></div>
     </aside>
     <div class="admin-backdrop" @click="menuOpen = false"></div>

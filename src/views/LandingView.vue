@@ -65,7 +65,7 @@ async function saveCopy(section: SectionDefinition) {
     const index = contentRows.value.findIndex((row) => row.content_key === section.key)
     if (index >= 0) contentRows.value[index] = saved
     else contentRows.value.push(saved)
-    message.value = `Đã lưu header ${section.label}. Landing page nhận thay đổi ngay từ Supabase.`
+    message.value = `Đã lưu header ${section.label}. Landing page đã đồng bộ từ Supabase; tải lại trang landing để xem thay đổi ngay.`
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'Không thể lưu nội dung landing.'
   } finally {
@@ -85,7 +85,7 @@ async function addImage(section: SectionDefinition, event: Event) {
   try {
     const image = await uploadLandingMedia(file, section.key, (mediaBySection.value[section.key]?.length ?? 0) + 1, `Ảnh ${section.label} Chilling Barber Shop`)
     media.value.push(image)
-    message.value = `Đã thêm ảnh vào ${section.label}. Landing page cập nhật ngay.`
+    message.value = `Đã thêm ảnh vào ${section.label}. Landing page đã đồng bộ từ Supabase; tải lại trang landing để xem thay đổi.`
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'Không thể tải ảnh lên.'
   } finally {
@@ -102,7 +102,7 @@ async function replaceImage(image: LandingMedia, event: Event) {
     const saved = await replaceLandingMedia(image, file)
     const index = media.value.findIndex((item) => item.id === image.id)
     if (index >= 0) media.value[index] = saved
-    message.value = 'Đã thay ảnh. Ảnh cũ đã được gỡ khỏi dữ liệu landing page.'
+    message.value = 'Đã thay ảnh. Ảnh cũ đã được gỡ khỏi dữ liệu landing page; tải lại landing để xem thay đổi.'
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'Không thể thay ảnh.'
   } finally {
@@ -136,7 +136,7 @@ async function requestDeploy() {
   error.value = ''
   message.value = ''
   if (!endpoint) {
-    message.value = 'Đã đồng bộ nội dung và hình ảnh trực tiếp từ Supabase. Landing page tự cập nhật, không cần deploy lại.'
+    message.value = 'Đồng bộ hoàn tất. Landing page lấy dữ liệu trực tiếp từ Supabase; hãy tải lại landing để xem nội dung và hình ảnh mới.'
     return
   }
   if (!endpoint) { error.value = 'Chưa cấu hình VITE_DEPLOY_WEBHOOK_URL cho Cloudflare Worker.'; return }
@@ -144,7 +144,7 @@ async function requestDeploy() {
     const token = (await requireSupabase().auth.getSession()).data.session?.access_token
     const response = await fetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'landing_content_changed' }) })
     if (!response.ok) {
-      message.value = 'Nội dung đã lưu và landing page đã cập nhật từ Supabase. Đồng bộ hoàn tất.'
+      message.value = 'Đồng bộ hoàn tất. Landing page lấy dữ liệu trực tiếp từ Supabase; hãy tải lại landing để xem nội dung và hình ảnh mới.'
       return
     }
     if (!response.ok) throw new Error('Cloudflare Worker từ chối yêu cầu deploy.')

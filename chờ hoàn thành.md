@@ -56,6 +56,13 @@
 - Mẫu Telegram mới dùng tiêu đề nổi bật, icon, nhãn dữ liệu và xuống dòng từng mục. Migration `20260712134918_format_telegram_booking_notification.sql` đã áp dụng; gửi thử nhận HTTP 200.
 - Nút `Yêu cầu deploy` giữ nguyên theo giao diện, nhưng thông báo xác nhận rõ landing đã đồng bộ trực tiếp từ Supabase, không báo lỗi Worker gây hiểu nhầm.
 
+## Cập nhật 2026-07-12: Landing và realtime
+
+- Đã tìm và sửa policy RLS khiến anon không thể đọc `landing_content` và `landing_media`; xác nhận anon hiện đọc được 5 nhóm nội dung và 23 ảnh. Landing phải tải lại trang để nhận dữ liệu Supabase mới.
+- Đã sửa Telegram live booking dùng UTF-8 byte-safe, tránh lỗi `ðŸ...`; quyền `authenticated` đã có lại cho `test_telegram_notification`.
+- Đã thêm cập nhật chuông Realtime có polling 30 giây dự phòng, bỏ hai menu phụ và nhãn `Mới`, thêm animation nhẹ cùng nhãn giá trị trên cột chart.
+- Migration mới: `20260712145139_fix_public_landing_and_telegram_encoding.sql`. Cần build, commit, push và deploy Chilling OS sau khi kiểm tra cuối.
+
 ## Lưu ý bảo mật
 
 - Không đưa Bot Token Telegram, service role key hoặc GitHub token vào `VITE_*`, source hay file commit.

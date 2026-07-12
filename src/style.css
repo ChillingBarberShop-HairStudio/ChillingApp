@@ -50,6 +50,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .monthly-bar-group { position: relative; height: 100%; }
 .monthly-bar-group i { position: absolute; right: 32px; bottom: 0; left: 32px; height: var(--bar-height); border-radius: 7px 7px 0 0; background: linear-gradient(180deg, #e7c879, #bd8730); box-shadow: 4px 0 0 rgb(120 83 21 / .16); }
 .monthly-bar-group strong { position: absolute; z-index: 3; bottom: calc(var(--bar-height) + 8px); left: 50%; color: #73501b; font-size: .64rem; transform: translateX(-50%); white-space: nowrap; }
+.monthly-bar-group i { transform-origin: bottom; animation: chart-bar-rise .68s cubic-bezier(.22, 1, .36, 1) both; animation-delay: var(--bar-delay, 0ms); }
+.monthly-bar-group strong { z-index: 4; border-radius: 999px; background: rgb(255 255 255 / .92); padding: 2px 5px; box-shadow: 0 2px 8px rgb(75 54 20 / .12); animation: chart-label-in .35s ease both; animation-delay: calc(var(--bar-delay, 0ms) + 180ms); }
+.kpi-card, .panel, .staff-card { animation: surface-in .38s ease both; }
+@keyframes chart-bar-rise { from { transform: scaleY(.08); opacity: .25; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes chart-label-in { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes surface-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .monthly-trend-line { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .monthly-trend-line polyline { fill: none; stroke: #2f7bbf; stroke-width: 1.8; vector-effect: non-scaling-stroke; filter: drop-shadow(0 3px 3px rgb(47 123 191 / .25)); }
 .monthly-chart-axis { display: grid; height: 25px; color: #858990; font-size: .66rem; }
